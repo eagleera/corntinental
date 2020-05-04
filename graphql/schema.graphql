@@ -10,6 +10,7 @@ scalar DateTimeTz @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Da
 type Query {
     users: [User!]! @paginate(defaultCount: 10)
     user(id: ID @eq): User @find
+    room(id: ID @eq): Room @find
 }
 
 type User {
@@ -18,4 +19,28 @@ type User {
     email: String!
     created_at: DateTime!
     updated_at: DateTime!
+}
+
+type Room {
+  id: ID!
+  status: Boolean!
+  guests: [Guest!]! @hasMany
+}
+
+type Guest {
+  id: ID!
+  alias: String!
+  user: User! @belongsTo
+  points: [Point!]! @hasMany
+}
+
+type Point {
+  id: ID!
+  points: Int!
+  round: Round! @belongsTo
+}
+
+type Round {
+  id: ID!
+  name: String!
 }
