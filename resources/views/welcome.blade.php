@@ -31,9 +31,9 @@
                     </div>
                     <div class="columns mt-16 is-multiline">
                         <div class="column is-12">
-                            <button class="button is-primary is-fullwidth h-full text-xl font-bold">
+                            <a class="button is-primary is-fullwidth h-full text-xl font-bold" href="{{route('login')}}">
                                 Iniciar sesión
-                            </button>
+                            </a>
                         </div>
                         <div class="column is-12">
                             <button class="button is-danger is-fullwidth h-full text-xl font-bold">
