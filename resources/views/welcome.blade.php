@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{{ URL::asset('css/app.css') }}" />
-        <title>Corntinental</title>
-    </head>
-    <body class="h-screen pattern-cross-dots-xl has-background-grey-darker has-text-danger p-16">
-        <div class="h-full card rounded-md p-6 has-background-light">
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="h-full card rounded-md p-6 has-background-light">
         <div class="columns h-full">
             <div class="column is-6 h-full">
                 <div class="columns is-multiline h-full is-mobile">
@@ -36,15 +31,14 @@
                             </a>
                         </div>
                         <div class="column is-12">
-                            <button class="button is-danger is-fullwidth h-full text-xl font-bold">
+                            <a class="button is-danger is-fullwidth h-full text-xl font-bold" href="{{route('register')}}">
                                 Crear una cuenta
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        </div>
-    </body>
-    <script type="text/javascript" src="{{ URL::to('js/app.js') }}"></script>
-</html>
+    </div>
+</div>
+@endsection
