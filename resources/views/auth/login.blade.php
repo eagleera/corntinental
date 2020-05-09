@@ -17,7 +17,7 @@
             <div class="field">
                 <label class="label">Contraseña</label>
                 <div class="control">
-                    <input class="input @error('password') is-invalid @enderror" type="password" name="password" value="{{ old('email') }}" required autocomplete="current-password">
+                    <input class="input @error('password') is-invalid @enderror" type="password" name="password" required autocomplete="current-password">
                 </div>
                 @error('password')
                     <p class="help is-danger">{{ $message }}</p>

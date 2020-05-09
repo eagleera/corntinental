@@ -13,7 +13,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
+Route::middleware('admin')->get('/', function () {
     return view('welcome');
 });
+Route::middleware('admin')->get('/admin', 'AdminController@index');
+Route::get('/admin/edit_user/{id}', 'AdminController@editUser')->name('edit_user');
+Route::post('/admin/edit_user', 'AdminController@handleEditUser')->name('post_edit_user');
+Route::delete('/admin/user/{id}', 'AdminController@deleteUser')->name('delete_user');
 Auth::routes();

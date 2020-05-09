@@ -40,7 +40,7 @@
                     </div>
                 @else
                     <div class="border-4 border-gray-600 h-full rounded-md p-8 relative">
-                        <p class="text-2xl font-bold">Tu historial de partidas</p>
+                        <p class="text-xl font-bold">{{ Auth::user()->name }}, Aqui tienes tu historial de partidas</p>
                         @auth
                             <a
                                 class="has-text-link absolute bottom-0 right-0 p-2"

@@ -14,7 +14,7 @@
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
-<body class="h-screen pattern-cross-dots-xl has-background-grey-darker has-text-danger p-16">
+<body class="min-h-screen pattern-cross-dots-xl has-background-grey-darker has-text-danger p-16">
     <div id="app">
         {{-- <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">

@@ -4,6 +4,7 @@
 $primary: #233142;
 $danger: #f95959;
 $light: #e3e3e3;
+$table-background-color: #e3e3e3;
 
 // Update Bulma's global variables
 $family-sans-serif: "Nunito", sans-serif;
@@ -13,3 +14,7 @@ $family-sans-serif: "Nunito", sans-serif;
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import '~@fortawesome/fontawesome-free/scss/fontawesome';
+@import '~@fortawesome/fontawesome-free/scss/regular';
+@import '~@fortawesome/fontawesome-free/scss/solid';
+@import '~@fortawesome/fontawesome-free/scss/brands';
