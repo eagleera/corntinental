@@ -7,14 +7,14 @@
             <div class="column is-6 h-full">
                 <div class="columns is-multiline h-full is-mobile">
                     <div class="column is-12 text-center py-16 px-32">
-                        <button class="button is-danger is-fullwidth h-full text-3xl font-bold">
+                        <a class="button is-danger is-fullwidth h-full text-3xl font-bold" href="{{route('nuevo_juego_index')}}">
                             Crear un nuevo juego
-                        </button>
+                        </a>
                     </div>
                     <div class="column is-12 text-center py-16 px-32">
-                        <button class="button is-primary is-fullwidth h-full text-3xl font-bold">
+                        <a class="button is-primary is-fullwidth h-full text-3xl font-bold" href="{{route('unir_juego_index')}}">
                             Unirse a una partida
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>

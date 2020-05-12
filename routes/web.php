@@ -13,9 +13,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('admin')->get('/', function () {
-    return view('welcome');
-});
+Route::post('/nuevo_juego', 'JuegoController@createNuevo')->name('nuevo_juego');
+Route::get('/juego/{id}', 'JuegoController@index')->name('juego_index');
+Route::get('/nuevo_juego', 'JuegoController@indexCreate')->name('nuevo_juego_index');
+Route::get('/unirse_juego', 'JuegoController@indexJoin')->name('unir_juego_index');
+Route::put('/unirse_juego', 'JuegoController@joinRoom')->name('join_room');
+
+Route::get('/', 'HomeController@index');
 Route::middleware('admin')->get('/admin', 'AdminController@index');
 Route::get('/admin/edit_user/{id}', 'AdminController@editUser')->name('edit_user');
 Route::post('/admin/edit_user', 'AdminController@handleEditUser')->name('post_edit_user');

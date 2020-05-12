@@ -15,7 +15,7 @@ class CreateRoomsTable extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->string('password');
+            $table->integer('password');
             $table->boolean('status')->default(0);
             $table->timestamps();
             $table->softDeletes();
