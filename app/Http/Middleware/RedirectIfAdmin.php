@@ -6,7 +6,7 @@ use App\Providers\RouteServiceProvider;
 use Closure;
 use Illuminate\Support\Facades\Auth;
 
-class RedirectIfAuthenticated
+class RedirectIfAdmin
 {
     /**
      * Handle an incoming request.
@@ -18,10 +18,9 @@ class RedirectIfAuthenticated
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if (Auth::guard($guard)->check()) {            
-            return redirect(RouteServiceProvider::HOME);
+        if(Auth::user() && Auth::user()->admin === true && $request->path() != "admin"){       
+            return redirect(RouteServiceProvider::ADMIN);
         }
-
         return $next($request);
     }
 }
