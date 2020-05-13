@@ -8,14 +8,10 @@ use App\Room;
 use App\Guest;
 use App\Providers\RouteServiceProvider;
 use Symfony\Component\HttpFoundation\Cookie;
+use App\Events\JoinEvent;
 
 class JuegoController extends Controller
 {
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
     public function createNuevo(Request $request)
     {
         $data= $request->validate([
@@ -26,12 +22,10 @@ class JuegoController extends Controller
         $room->status = true;
         $room->save();
         $guest = $this->createGuest($room->id, $data['alias']);
-        $cookie = cookie('guest_id', $guest->guest_id, 600);
         $room->owner_id = $guest->id;
         $room->save();
-        return redirect()->action(
-            'JuegoController@index', ['id' => $room->id]
-        )->cookie($cookie);
+        $room->guest_key = $guest->guest_id;
+        return $room;
     }
     public function index(Request $request, $room_id){
         $room = Room::with('guests')->find($room_id);
@@ -39,6 +33,10 @@ class JuegoController extends Controller
         $me = Guest::where('guest_id', $cookie)->first();
         return view('room')->with('room', $room)->with('me', $me);
     }
+    public function indexAvailable(){
+        return Room::where('status', 1)->get()->pluck('id');
+    }
+
     public function indexCreate(Request $request){
         $cookie = $request->cookie('guest_id');
         if($cookie){
@@ -69,13 +67,12 @@ class JuegoController extends Controller
         ]);
         $room = Room::where(['id' => $data['room_id'], 'password' => $data['password']])->first();
         if(!$room){
-            return \Redirect::back()->withErrors(['La contraseña no coincide']);
+            abort(404);
         }
         $guest = $this->createGuest($room->id, $data['alias']);
-        $cookie = cookie('guest_id', $guest->guest_id, 600);
-        return redirect()->action(
-            'JuegoController@index', ['id' => $room->id]
-        )->cookie($cookie);
+        broadcast(new JoinEvent($room->id, $guest))->toOthers();
+        $room->guest_key = $guest->guest_id;
+        return $room;
     }
 
     function createGuest($room_id, $alias){

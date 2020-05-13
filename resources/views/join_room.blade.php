@@ -17,7 +17,7 @@
             {{ method_field('PUT') }}
             <div class="field">
                 <label class="label">Salas disponibles</label>
-                <div class="select is-fullwidth">
+                <div class="select is-fullwidth form-controlp">
                     <select name="room_id" required>
                         <option selected disabled>Selecciona una opción...</option>
                         @foreach ($rooms as $room)

@@ -17,3 +17,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::post('/nuevo_juego', 'JuegoController@createNuevo');
+Route::put('/unirse_juego', 'JuegoController@joinRoom');
+Route::get('/rooms_available', 'JuegoController@indexAvailable');

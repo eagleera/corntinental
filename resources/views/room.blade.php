@@ -3,7 +3,8 @@
 @section('content')
 <div class="container">
     <div class="h-full card rounded-md p-6 has-background-light">
-            <div class="column is-12 h-full ">
+            <div class="row">
+            <div class="col-12 h-full ">
                     <div class="border-4 border-gray-600 h-full rounded-md p-8 relative">
                         <div class="columns">
                         <p class="text-2xl font-bold column">Sala de juego #{{$room->id}}</p>
@@ -16,7 +17,7 @@
                             </div>
                         </div>
                         </div>
-                        <p class="mt-2 ">Jugadores</p>
+                        <p class="mt-2">Jugadores</p>
                         <div class="table-container">
                             <table class="table is-fullwidth is-hoverable is-bordered">
                             <thead>
@@ -36,6 +37,7 @@
                             <button class="button is-danger mt-4">Cerrar sala</button>
                         @endif
                     </div>
+            </div>
             </div>
         </div>
     </div>

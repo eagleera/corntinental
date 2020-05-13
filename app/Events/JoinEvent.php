@@ -14,16 +14,16 @@ class JoinEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     public $id;
-    public $name;
+    public $guest;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($id, $type)
+    public function __construct($id, $guest)
     {
         $this->id = $id;
-        $this->type = $name;
+        $this->guest = $guest;
     }
 
     /**
