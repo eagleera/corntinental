@@ -2108,7 +2108,9 @@ __webpack_require__.r(__webpack_exports__);
           password: _this3.password,
           room_id: _this3.sala_id
         };
-        Room.join(data);
+        Room.join(data).then(function () {
+          console.log(data);
+        });
 
         _this3.$bvModal.hide('modal-prevent-closing');
       });
@@ -2133,17 +2135,76 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "room",
   data: function data() {
     return {
-      prueba: 10
+      prueba: 10,
+      room: null,
+      is_owner: false,
+      me: null
     };
+  },
+  computed: {
+    pwdArray: function pwdArray() {
+      return Array.from(this.room.password.toString());
+    }
+  },
+  methods: {
+    nextRound: function nextRound() {
+      Room.nextRound(this.room.id);
+    }
   },
   mounted: function mounted() {
     var _this = this;
 
-    Echo.channel('joinChannel').listen('JoinEvent', function (e) {
+    Room.getData(this.$route.params.id).then(function (data) {
+      _this.room = data;
+
+      if (_this.room.owner.guest_id == localStorage.getItem("guest_id")) {
+        _this.is_owner = true;
+      }
+
+      _this.me = data.guests.filter(function (guest) {
+        return guest.guest_id == localStorage.getItem("guest_id");
+      })[0];
+    });
+    Echo.channel("joinChannel").listen("JoinEvent", function (e) {
       console.log(e, _this.$route.params.id);
 
       if (_this.$route.params.id == e.id) {
@@ -85298,10 +85359,87 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "card rounded-sm p-4" }, [
-    _c("div", {}, [_vm._v("este es mi room")]),
+  return _c("div", { staticClass: "card rounded-sm p-4 text-primary" }, [
+    _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col-8" }, [
+        _c("p", { staticClass: "text-2xl font-bold" }, [
+          _vm._v(
+            "Sala #" + _vm._s(_vm.room.id) + ", eres " + _vm._s(_vm.me.alias)
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-4" }, [
+        _c("p", { staticClass: "text-xl" }, [_vm._v("Contraseña:")]),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "flex justify-between text-2xl" },
+          _vm._l(_vm.pwdArray, function(letra, index) {
+            return _c(
+              "div",
+              {
+                key: index,
+                staticClass:
+                  "bg-light px-4 py-3 rounded-md font-bold text-danger"
+              },
+              [_vm._v(_vm._s(letra))]
+            )
+          }),
+          0
+        )
+      ])
+    ]),
     _vm._v(" "),
-    _c("p", [_vm._v(_vm._s(_vm.prueba) + " ")])
+    _c("div", { staticClass: "row mt-4" }, [
+      _c("table", { staticClass: "table table-bordered" }, [
+        _c("thead", { staticClass: "thead-dark" }, [
+          _c(
+            "tr",
+            [
+              _c("th", [_vm._v("Rondas / Jugadores")]),
+              _vm._v(" "),
+              _vm._l(_vm.room.guests, function(guest) {
+                return _c("th", { key: guest.id }, [
+                  _vm._v(_vm._s(guest.alias))
+                ])
+              })
+            ],
+            2
+          )
+        ]),
+        _vm._v(" "),
+        _c("tbody"),
+        _vm._v(" "),
+        _c("tfoot", [
+          _c(
+            "tr",
+            [
+              _c("td", [_vm._v("Totales:")]),
+              _vm._v(" "),
+              _vm._l(_vm.room.guests, function(guest) {
+                return _c("th", { key: guest.id }, [_vm._v("0")])
+              })
+            ],
+            2
+          )
+        ])
+      ])
+    ]),
+    _vm._v(" "),
+    _vm.is_owner
+      ? _c(
+          "div",
+          [
+            _c(
+              "b-button",
+              { attrs: { variant: "success" }, on: { click: _vm.nextRound } },
+              [_vm._v("Comenzar partida")]
+            )
+          ],
+          1
+        )
+      : _vm._e()
   ])
 }
 var staticRenderFns = []
@@ -100726,6 +100864,7 @@ var Room = /*#__PURE__*/function () {
       }).then(function (res) {
         console.log(res.data);
         localStorage.setItem('guest_id', res.data.guest_key);
+        document.cookie = "guest_id=" + res.data.guest_key;
         window.location = '/juego/' + res.data.id;
       })["catch"](function (error) {
         return console.log(error.response.data);
@@ -100737,6 +100876,7 @@ var Room = /*#__PURE__*/function () {
       axios.put('/api/unirse_juego', data).then(function (res) {
         console.log(res.data);
         localStorage.setItem('guest_id', res.data.guest_key);
+        document.cookie = "guest_id=" + res.data.guest_key;
         window.location = '/juego/' + res.data.id;
       })["catch"](function (error) {
         return console.log(error.response.data);
@@ -100746,6 +100886,24 @@ var Room = /*#__PURE__*/function () {
     key: "getAvailable",
     value: function getAvailable() {
       return axios.get('/api/rooms_available').then(function (res) {
+        return res.data;
+      })["catch"](function (error) {
+        return console.log(error.response.data);
+      });
+    }
+  }, {
+    key: "getData",
+    value: function getData(id) {
+      return axios.get("/api/juego/".concat(id)).then(function (res) {
+        return res.data;
+      })["catch"](function (error) {
+        return console.log(error.response.data);
+      });
+    }
+  }, {
+    key: "nextRound",
+    value: function nextRound(id) {
+      return axios.put("/api/siguiente_ronda/".concat(id)).then(function (res) {
         return res.data;
       })["catch"](function (error) {
         return console.log(error.response.data);

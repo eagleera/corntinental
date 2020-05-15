@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Room extends Model
 {
@@ -14,6 +15,10 @@ class Room extends Model
     public function guests(): HasMany
     {
         return $this->hasMany(Guest::class);
+    }
+    public function owner(): HasOne
+    {
+        return $this->HasOne(Guest::class);
     }
     public function points(): HasMany
     {

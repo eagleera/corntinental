@@ -169,7 +169,10 @@ export default {
             password: this.password,
             room_id: this.sala_id
           }
-          Room.join(data);
+          Room.join(data).then(() => {
+            console.log(data);
+            
+          });
           this.$bvModal.hide('modal-prevent-closing')
         })
       }

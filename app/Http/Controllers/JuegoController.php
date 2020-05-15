@@ -28,10 +28,12 @@ class JuegoController extends Controller
         return $room;
     }
     public function index(Request $request, $room_id){
-        $room = Room::with('guests')->find($room_id);
         $cookie = $request->cookie('guest_id');
-        $me = Guest::where('guest_id', $cookie)->first();
-        return view('room')->with('room', $room)->with('me', $me);
+        if(!$cookie){
+            abort(404);
+        }
+        $room = Room::with('guests', 'points', 'owner')->find($room_id);
+        return $room;
     }
     public function indexAvailable(){
         return Room::where('status', 1)->get()->pluck('id');
@@ -73,6 +75,12 @@ class JuegoController extends Controller
         broadcast(new JoinEvent($room->id, $guest))->toOthers();
         $room->guest_key = $guest->guest_id;
         return $room;
+    }
+    public function nextRound($room_id){
+        $room = Room::with('points')->find($room_id);
+        if(sizeof($room->points) == 0){
+
+        }
     }
 
     function createGuest($room_id, $alias){
