@@ -33,8 +33,8 @@ class Room {
             })
             .catch(error => console.log(error.response.data))
     }
-    nextRound(id){
-        return axios.put(`/api/siguiente_ronda/${id}`)
+    nextRound(data){
+        return axios.put(`/api/siguiente_ronda/${data.room}`, data)
             .then(res => {
                 return res.data;
             })

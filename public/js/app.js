@@ -2170,6 +2170,46 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "room",
   data: function data() {
@@ -2177,7 +2217,8 @@ __webpack_require__.r(__webpack_exports__);
       prueba: 10,
       room: null,
       is_owner: false,
-      me: null
+      me: null,
+      actual_round: 1
     };
   },
   computed: {
@@ -2187,28 +2228,84 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     nextRound: function nextRound() {
-      Room.nextRound(this.room.id);
+      var _this = this;
+
+      var round = {
+        actual: this.actual_round,
+        points: [],
+        room: this.room.id
+      };
+      this.room.guests.forEach(function (guest) {
+        round.points.push({
+          guest_id: guest.id,
+          points: guest.points
+        });
+        delete guest.points;
+      });
+      Room.nextRound(round).then(function (data) {
+        _this.room = data;
+      });
+    },
+    round: function round(id) {
+      var grouped = this.groupBy(this.room.points, function (point) {
+        return point.round_id;
+      });
+      this.actual_round = grouped.size + 1;
+      var round = grouped.get(id);
+
+      if (!round) {
+        round = [];
+        this.room.guests.forEach(function (guest) {
+          round.push({
+            points: 0
+          });
+        });
+      }
+
+      return round;
+    },
+    groupBy: function groupBy(list, keyGetter) {
+      var map = new Map();
+      list.forEach(function (item) {
+        var key = keyGetter(item);
+        var collection = map.get(key);
+
+        if (!collection) {
+          map.set(key, [item]);
+        } else {
+          collection.push(item);
+        }
+      });
+      return map;
+    },
+    total: function total(guest_id) {
+      return this.room.points.filter(function (point) {
+        return point.guest_id == guest_id;
+      }).reduce(function (prev, next) {
+        return prev + next.points;
+      }, 0);
     }
   },
   mounted: function mounted() {
-    var _this = this;
+    var _this2 = this;
 
     Room.getData(this.$route.params.id).then(function (data) {
-      _this.room = data;
+      _this2.room = data;
 
-      if (_this.room.owner.guest_id == localStorage.getItem("guest_id")) {
-        _this.is_owner = true;
+      if (_this2.room.owner.guest_id == localStorage.getItem("guest_id")) {
+        _this2.is_owner = true;
       }
 
-      _this.me = data.guests.filter(function (guest) {
+      _this2.me = data.guests.filter(function (guest) {
         return guest.guest_id == localStorage.getItem("guest_id");
       })[0];
     });
     Echo.channel("joinChannel").listen("JoinEvent", function (e) {
-      console.log(e, _this.$route.params.id);
-
-      if (_this.$route.params.id == e.id) {
-        _this.prueba += 10;
+      if (_this2.$route.params.id == e.id) {
+        Room.getData(_this2.$route.params.id).then(function (data) {
+          _this2.room = data;
+          console.log(_this2.room);
+        });
       }
     });
   }
@@ -85359,88 +85456,258 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "card rounded-sm p-4 text-primary" }, [
-    _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col-8" }, [
-        _c("p", { staticClass: "text-2xl font-bold" }, [
-          _vm._v(
-            "Sala #" + _vm._s(_vm.room.id) + ", eres " + _vm._s(_vm.me.alias)
-          )
-        ])
-      ]),
-      _vm._v(" "),
-      _c("div", { staticClass: "col-4" }, [
-        _c("p", { staticClass: "text-xl" }, [_vm._v("Contraseña:")]),
-        _vm._v(" "),
-        _c(
-          "div",
-          { staticClass: "flex justify-between text-2xl" },
-          _vm._l(_vm.pwdArray, function(letra, index) {
-            return _c(
-              "div",
-              {
-                key: index,
-                staticClass:
-                  "bg-light px-4 py-3 rounded-md font-bold text-danger"
-              },
-              [_vm._v(_vm._s(letra))]
-            )
-          }),
-          0
-        )
-      ])
-    ]),
-    _vm._v(" "),
-    _c("div", { staticClass: "row mt-4" }, [
-      _c("table", { staticClass: "table table-bordered" }, [
-        _c("thead", { staticClass: "thead-dark" }, [
-          _c(
-            "tr",
-            [
-              _c("th", [_vm._v("Rondas / Jugadores")]),
+  return _vm.room != null
+    ? _c(
+        "div",
+        { staticClass: "card rounded-sm p-4 text-primary" },
+        [
+          _c("div", { staticClass: "row" }, [
+            _c("div", { staticClass: "col-8" }, [
+              _c("p", { staticClass: "text-2xl font-bold" }, [
+                _vm._v(
+                  "Sala #" +
+                    _vm._s(_vm.room.id) +
+                    ", eres " +
+                    _vm._s(_vm.me.alias)
+                )
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-4" }, [
+              _c("p", { staticClass: "text-xl" }, [_vm._v("Contraseña:")]),
               _vm._v(" "),
-              _vm._l(_vm.room.guests, function(guest) {
-                return _c("th", { key: guest.id }, [
-                  _vm._v(_vm._s(guest.alias))
-                ])
-              })
-            ],
-            2
-          )
-        ]),
-        _vm._v(" "),
-        _c("tbody"),
-        _vm._v(" "),
-        _c("tfoot", [
-          _c(
-            "tr",
-            [
-              _c("td", [_vm._v("Totales:")]),
+              _c(
+                "div",
+                { staticClass: "flex justify-between text-2xl" },
+                _vm._l(_vm.pwdArray, function(letra, index) {
+                  return _c(
+                    "div",
+                    {
+                      key: index,
+                      staticClass:
+                        "bg-light px-4 py-3 rounded-md font-bold text-danger"
+                    },
+                    [_vm._v(_vm._s(letra))]
+                  )
+                }),
+                0
+              )
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "row mt-4" }, [
+            _c("table", { staticClass: "table table-bordered" }, [
+              _c("thead", { staticClass: "thead-dark" }, [
+                _c(
+                  "tr",
+                  [
+                    _c("th", [_vm._v("Rondas / Jugadores")]),
+                    _vm._v(" "),
+                    _vm._l(_vm.room.guests, function(guest) {
+                      return _c("th", { key: guest.id }, [
+                        _vm._v(_vm._s(guest.alias))
+                      ])
+                    })
+                  ],
+                  2
+                )
+              ]),
               _vm._v(" "),
-              _vm._l(_vm.room.guests, function(guest) {
-                return _c("th", { key: guest.id }, [_vm._v("0")])
-              })
-            ],
-            2
+              _c("tbody", [
+                _c(
+                  "tr",
+                  [
+                    _c("td", [_vm._v("#6")]),
+                    _vm._v(" "),
+                    _vm._l(_vm.round(1), function(round, index) {
+                      return _c("td", { key: index }, [
+                        _vm._v(_vm._s(round.points))
+                      ])
+                    })
+                  ],
+                  2
+                ),
+                _vm._v(" "),
+                _c(
+                  "tr",
+                  [
+                    _c("td", [_vm._v("#7")]),
+                    _vm._v(" "),
+                    _vm._l(_vm.round(2), function(round, index) {
+                      return _c("td", { key: index }, [
+                        _vm._v(_vm._s(round.points))
+                      ])
+                    })
+                  ],
+                  2
+                ),
+                _vm._v(" "),
+                _c(
+                  "tr",
+                  [
+                    _c("td", [_vm._v("#8")]),
+                    _vm._v(" "),
+                    _vm._l(_vm.round(3), function(round, index) {
+                      return _c("td", { key: index }, [
+                        _vm._v(_vm._s(round.points))
+                      ])
+                    })
+                  ],
+                  2
+                ),
+                _vm._v(" "),
+                _c(
+                  "tr",
+                  [
+                    _c("td", [_vm._v("#9")]),
+                    _vm._v(" "),
+                    _vm._l(_vm.round(4), function(round, index) {
+                      return _c("td", { key: index }, [
+                        _vm._v(_vm._s(round.points))
+                      ])
+                    })
+                  ],
+                  2
+                ),
+                _vm._v(" "),
+                _c(
+                  "tr",
+                  [
+                    _c("td", [_vm._v("#10")]),
+                    _vm._v(" "),
+                    _vm._l(_vm.round(5), function(round, index) {
+                      return _c("td", { key: index }, [
+                        _vm._v(_vm._s(round.points))
+                      ])
+                    })
+                  ],
+                  2
+                ),
+                _vm._v(" "),
+                _c(
+                  "tr",
+                  [
+                    _c("td", [_vm._v("#11")]),
+                    _vm._v(" "),
+                    _vm._l(_vm.round(6), function(round, index) {
+                      return _c("td", { key: index }, [
+                        _vm._v(_vm._s(round.points))
+                      ])
+                    })
+                  ],
+                  2
+                ),
+                _vm._v(" "),
+                _c(
+                  "tr",
+                  [
+                    _c("td", [_vm._v("#12")]),
+                    _vm._v(" "),
+                    _vm._l(_vm.round(7), function(round, index) {
+                      return _c("td", { key: index }, [
+                        _vm._v(_vm._s(round.points))
+                      ])
+                    })
+                  ],
+                  2
+                )
+              ]),
+              _vm._v(" "),
+              _c("tfoot", [
+                _c(
+                  "tr",
+                  [
+                    _c("td", [_vm._v("Totales:")]),
+                    _vm._v(" "),
+                    _vm._l(_vm.room.guests, function(guest) {
+                      return _c("th", { key: guest.id }, [
+                        _vm._v(_vm._s(_vm.total(guest.id)))
+                      ])
+                    })
+                  ],
+                  2
+                )
+              ])
+            ])
+          ]),
+          _vm._v(" "),
+          _vm.is_owner
+            ? _c(
+                "div",
+                [
+                  _c(
+                    "b-button",
+                    {
+                      directives: [
+                        {
+                          name: "b-modal",
+                          rawName: "v-b-modal.results-modal",
+                          modifiers: { "results-modal": true }
+                        }
+                      ],
+                      attrs: { variant: "success" }
+                    },
+                    [_vm._v("Anotar resultados de ronda")]
+                  )
+                ],
+                1
+              )
+            : _vm._e(),
+          _vm._v(" "),
+          _c(
+            "b-modal",
+            {
+              ref: "modal",
+              attrs: { id: "results-modal", title: "Resultados de la ronda" },
+              on: { ok: _vm.nextRound }
+            },
+            [
+              _c(
+                "form",
+                {
+                  ref: "nextroundform",
+                  on: {
+                    submit: function($event) {
+                      $event.stopPropagation()
+                      $event.preventDefault()
+                      return _vm.nextRound($event)
+                    }
+                  }
+                },
+                _vm._l(_vm.room.guests, function(guest) {
+                  return _c(
+                    "b-form-group",
+                    {
+                      key: guest.id,
+                      attrs: {
+                        label: guest.alias,
+                        "label-for": "name-input",
+                        "invalid-feedback": "El nombre es obligatorio"
+                      }
+                    },
+                    [
+                      _c("b-form-input", {
+                        attrs: { id: "name-input", required: "" },
+                        model: {
+                          value: guest.points,
+                          callback: function($$v) {
+                            _vm.$set(guest, "points", $$v)
+                          },
+                          expression: "guest.points"
+                        }
+                      })
+                    ],
+                    1
+                  )
+                }),
+                1
+              )
+            ]
           )
-        ])
-      ])
-    ]),
-    _vm._v(" "),
-    _vm.is_owner
-      ? _c(
-          "div",
-          [
-            _c(
-              "b-button",
-              { attrs: { variant: "success" }, on: { click: _vm.nextRound } },
-              [_vm._v("Comenzar partida")]
-            )
-          ],
-          1
-        )
-      : _vm._e()
-  ])
+        ],
+        1
+      )
+    : _vm._e()
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -100902,8 +101169,8 @@ var Room = /*#__PURE__*/function () {
     }
   }, {
     key: "nextRound",
-    value: function nextRound(id) {
-      return axios.put("/api/siguiente_ronda/".concat(id)).then(function (res) {
+    value: function nextRound(data) {
+      return axios.put("/api/siguiente_ronda/".concat(data.room), data).then(function (res) {
         return res.data;
       })["catch"](function (error) {
         return console.log(error.response.data);

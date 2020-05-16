@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\User;
 use App\Room;
 use App\Guest;
+use App\Point;
+use App\Round;
 use App\Providers\RouteServiceProvider;
 use Symfony\Component\HttpFoundation\Cookie;
 use App\Events\JoinEvent;
@@ -76,11 +78,21 @@ class JuegoController extends Controller
         $room->guest_key = $guest->guest_id;
         return $room;
     }
-    public function nextRound($room_id){
+    public function nextRound(Request $request, $room_id){
         $room = Room::with('points')->find($room_id);
-        if(sizeof($room->points) == 0){
-
+        $data = $request->validate([
+            'actual' => 'required|exists:rounds,id',
+            'points' => 'required|array',
+        ]);
+        foreach($data['points'] as $round){
+            $point = new Point();
+            $point->room_id = $room->getKey();
+            $point->round_id = $data['actual'];
+            $point->guest_id = $round['guest_id'];
+            $point->points = $round['points'];
+            $point->save();
         }
+        return Room::with('points', 'guests', 'owner')->find($room_id);
     }
 
     function createGuest($room_id, $alias){
@@ -110,5 +122,9 @@ class JuegoController extends Controller
     public function deleteUser($id){
         User::destroy($id);
         return redirect(RouteServiceProvider::ADMIN);
+    }
+    function getUser(){
+        $cookie = $request->cookie('guest_id');
+        return Guest::where('guest_id', $cookie)->first();
     }
 }
