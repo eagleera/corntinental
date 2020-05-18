@@ -92,6 +92,7 @@ class JuegoController extends Controller
             $point->points = $round['points'];
             $point->save();
         }
+        broadcast(new JoinEvent($room->id, $room))->toOthers();
         return Room::with('points', 'guests', 'owner')->find($room_id);
     }
 

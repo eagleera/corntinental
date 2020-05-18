@@ -2,23 +2,23 @@
   <div class="container">
     <div class="h-full card rounded-md p-6 has-background-light">
       <div class="row h-full">
-        <div class="col-6">
+        <div class="col-12 col-md-6">
           <div class="row h-full">
-            <div class="col-12 text-center px-32 py-24">
+            <div class="col-12 col-md-6 text-center">
               <b-button
                 v-b-modal.create-room-modal
                 class="btn btn-secondary btn-block h-full text-3xl font-bold flex items-center justify-center"
               >Crear un nuevo juego</b-button>
             </div>
-            <div class="col-12 text-center px-32 py-24">
+            <div class="col-12 col-md-6 text-center ">
               <b-button
                 v-b-modal.join-room-modal
-                class="btn btn-primary btn-block h-full text-3xl font-bold flex items-center justify-center"
+                class="btn btn-primary btn-block h-full text-3xl font-bold flex items-center justify-center mt-4"
               >Unirse a una partida</b-button>
             </div>
           </div>
         </div>
-        <div class="col-6 p-16">
+        <div class="col-12 col-md-6 p-16">
           <div class="border-4 border-gray-600 h-full rounded-md p-8 text-black">
             <div>
               <p class="font-bold text-4xl">Hola!</p>

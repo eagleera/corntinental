@@ -2210,6 +2210,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "room",
   data: function data() {
@@ -85142,7 +85144,7 @@ var render = function() {
   return _c(
     "div",
     {
-      staticClass: "min-h-screen pattern-cross-dots-xl bg-dark text-danger p-16"
+      staticClass: "min-h-screen pattern-cross-dots-xl bg-dark text-danger p-4"
     },
     [_c("router-view")],
     1
@@ -85179,11 +85181,11 @@ var render = function() {
         { staticClass: "h-full card rounded-md p-6 has-background-light" },
         [
           _c("div", { staticClass: "row h-full" }, [
-            _c("div", { staticClass: "col-6" }, [
+            _c("div", { staticClass: "col-12 col-md-6" }, [
               _c("div", { staticClass: "row h-full" }, [
                 _c(
                   "div",
-                  { staticClass: "col-12 text-center px-32 py-24" },
+                  { staticClass: "col-12 col-md-6 text-center" },
                   [
                     _c(
                       "b-button",
@@ -85206,7 +85208,7 @@ var render = function() {
                 _vm._v(" "),
                 _c(
                   "div",
-                  { staticClass: "col-12 text-center px-32 py-24" },
+                  { staticClass: "col-12 col-md-6 text-center " },
                   [
                     _c(
                       "b-button",
@@ -85219,7 +85221,7 @@ var render = function() {
                           }
                         ],
                         staticClass:
-                          "btn btn-primary btn-block h-full text-3xl font-bold flex items-center justify-center"
+                          "btn btn-primary btn-block h-full text-3xl font-bold flex items-center justify-center mt-4"
                       },
                       [_vm._v("Unirse a una partida")]
                     )
@@ -85388,7 +85390,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-6 p-16" }, [
+    return _c("div", { staticClass: "col-12 col-md-6 p-16" }, [
       _c(
         "div",
         {
@@ -85462,7 +85464,7 @@ var render = function() {
         { staticClass: "card rounded-sm p-4 text-primary" },
         [
           _c("div", { staticClass: "row" }, [
-            _c("div", { staticClass: "col-8" }, [
+            _c("div", { staticClass: "col-12 col-md-8" }, [
               _c("p", { staticClass: "text-2xl font-bold" }, [
                 _vm._v(
                   "Sala #" +
@@ -85473,7 +85475,7 @@ var render = function() {
               ])
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "col-4" }, [
+            _c("div", { staticClass: "col-12 col-md-4" }, [
               _c("p", { staticClass: "text-xl" }, [_vm._v("Contraseña:")]),
               _vm._v(" "),
               _c(
@@ -85485,7 +85487,7 @@ var render = function() {
                     {
                       key: index,
                       staticClass:
-                        "bg-light px-4 py-3 rounded-md font-bold text-danger"
+                        "bg-light px-2 py-2 rounded-md font-bold text-danger"
                     },
                     [_vm._v(_vm._s(letra))]
                   )
@@ -85496,137 +85498,139 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "row mt-4" }, [
-            _c("table", { staticClass: "table table-bordered" }, [
-              _c("thead", { staticClass: "thead-dark" }, [
-                _c(
-                  "tr",
-                  [
-                    _c("th", [_vm._v("Rondas / Jugadores")]),
-                    _vm._v(" "),
-                    _vm._l(_vm.room.guests, function(guest) {
-                      return _c("th", { key: guest.id }, [
-                        _vm._v(_vm._s(guest.alias))
-                      ])
-                    })
-                  ],
-                  2
-                )
-              ]),
-              _vm._v(" "),
-              _c("tbody", [
-                _c(
-                  "tr",
-                  [
-                    _c("td", [_vm._v("#6")]),
-                    _vm._v(" "),
-                    _vm._l(_vm.round(1), function(round, index) {
-                      return _c("td", { key: index }, [
-                        _vm._v(_vm._s(round.points))
-                      ])
-                    })
-                  ],
-                  2
-                ),
+            _c("div", { staticClass: "table-responsive" }, [
+              _c("table", { staticClass: "table table-bordered" }, [
+                _c("thead", { staticClass: "thead-dark" }, [
+                  _c(
+                    "tr",
+                    [
+                      _c("th", [_vm._v("Rondas / Jugadores")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.room.guests, function(guest) {
+                        return _c("th", { key: guest.id }, [
+                          _vm._v(_vm._s(guest.alias))
+                        ])
+                      })
+                    ],
+                    2
+                  )
+                ]),
                 _vm._v(" "),
-                _c(
-                  "tr",
-                  [
-                    _c("td", [_vm._v("#7")]),
-                    _vm._v(" "),
-                    _vm._l(_vm.round(2), function(round, index) {
-                      return _c("td", { key: index }, [
-                        _vm._v(_vm._s(round.points))
-                      ])
-                    })
-                  ],
-                  2
-                ),
+                _c("tbody", [
+                  _c(
+                    "tr",
+                    [
+                      _c("td", [_vm._v("#6")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.round(1), function(round, index) {
+                        return _c("td", { key: index }, [
+                          _vm._v(_vm._s(round.points))
+                        ])
+                      })
+                    ],
+                    2
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    [
+                      _c("td", [_vm._v("#7")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.round(2), function(round, index) {
+                        return _c("td", { key: index }, [
+                          _vm._v(_vm._s(round.points))
+                        ])
+                      })
+                    ],
+                    2
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    [
+                      _c("td", [_vm._v("#8")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.round(3), function(round, index) {
+                        return _c("td", { key: index }, [
+                          _vm._v(_vm._s(round.points))
+                        ])
+                      })
+                    ],
+                    2
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    [
+                      _c("td", [_vm._v("#9")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.round(4), function(round, index) {
+                        return _c("td", { key: index }, [
+                          _vm._v(_vm._s(round.points))
+                        ])
+                      })
+                    ],
+                    2
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    [
+                      _c("td", [_vm._v("#10")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.round(5), function(round, index) {
+                        return _c("td", { key: index }, [
+                          _vm._v(_vm._s(round.points))
+                        ])
+                      })
+                    ],
+                    2
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    [
+                      _c("td", [_vm._v("#11")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.round(6), function(round, index) {
+                        return _c("td", { key: index }, [
+                          _vm._v(_vm._s(round.points))
+                        ])
+                      })
+                    ],
+                    2
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    [
+                      _c("td", [_vm._v("#12")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.round(7), function(round, index) {
+                        return _c("td", { key: index }, [
+                          _vm._v(_vm._s(round.points))
+                        ])
+                      })
+                    ],
+                    2
+                  )
+                ]),
                 _vm._v(" "),
-                _c(
-                  "tr",
-                  [
-                    _c("td", [_vm._v("#8")]),
-                    _vm._v(" "),
-                    _vm._l(_vm.round(3), function(round, index) {
-                      return _c("td", { key: index }, [
-                        _vm._v(_vm._s(round.points))
-                      ])
-                    })
-                  ],
-                  2
-                ),
-                _vm._v(" "),
-                _c(
-                  "tr",
-                  [
-                    _c("td", [_vm._v("#9")]),
-                    _vm._v(" "),
-                    _vm._l(_vm.round(4), function(round, index) {
-                      return _c("td", { key: index }, [
-                        _vm._v(_vm._s(round.points))
-                      ])
-                    })
-                  ],
-                  2
-                ),
-                _vm._v(" "),
-                _c(
-                  "tr",
-                  [
-                    _c("td", [_vm._v("#10")]),
-                    _vm._v(" "),
-                    _vm._l(_vm.round(5), function(round, index) {
-                      return _c("td", { key: index }, [
-                        _vm._v(_vm._s(round.points))
-                      ])
-                    })
-                  ],
-                  2
-                ),
-                _vm._v(" "),
-                _c(
-                  "tr",
-                  [
-                    _c("td", [_vm._v("#11")]),
-                    _vm._v(" "),
-                    _vm._l(_vm.round(6), function(round, index) {
-                      return _c("td", { key: index }, [
-                        _vm._v(_vm._s(round.points))
-                      ])
-                    })
-                  ],
-                  2
-                ),
-                _vm._v(" "),
-                _c(
-                  "tr",
-                  [
-                    _c("td", [_vm._v("#12")]),
-                    _vm._v(" "),
-                    _vm._l(_vm.round(7), function(round, index) {
-                      return _c("td", { key: index }, [
-                        _vm._v(_vm._s(round.points))
-                      ])
-                    })
-                  ],
-                  2
-                )
-              ]),
-              _vm._v(" "),
-              _c("tfoot", [
-                _c(
-                  "tr",
-                  [
-                    _c("td", [_vm._v("Totales:")]),
-                    _vm._v(" "),
-                    _vm._l(_vm.room.guests, function(guest) {
-                      return _c("th", { key: guest.id }, [
-                        _vm._v(_vm._s(_vm.total(guest.id)))
-                      ])
-                    })
-                  ],
-                  2
-                )
+                _c("tfoot", [
+                  _c(
+                    "tr",
+                    [
+                      _c("td", [_vm._v("Totales:")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.room.guests, function(guest) {
+                        return _c("th", { key: guest.id }, [
+                          _vm._v(_vm._s(_vm.total(guest.id)))
+                        ])
+                      })
+                    ],
+                    2
+                  )
+                ])
               ])
             ])
           ]),
