@@ -9,7 +9,9 @@ import BootstrapVue from 'bootstrap-vue'
 window.Vue = require('vue');
 import Vue from 'vue'
 import Room from './helpers/Room'
+import User from './helpers/User'
 window.Room = Room;
+window.User = User;
 
 Vue.use(BootstrapVue)
 

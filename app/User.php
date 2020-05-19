@@ -2,13 +2,28 @@
 
 namespace App;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = bcrypt($value);
+    }
 
     /**
      * The attributes that are mass assignable.

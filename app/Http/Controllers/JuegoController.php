@@ -17,11 +17,13 @@ class JuegoController extends Controller
     public function createNuevo(Request $request)
     {
         $data= $request->validate([
-            'alias' => 'sometimes'
+            'alias' => 'sometimes',
+            'room_name' => 'required|string'
         ]);
         $room = new Room;
         $room->password = substr(str_shuffle("0123456789"), 0, 5);
         $room->status = true;
+        $room->name = $data['room_name'];
         $room->save();
         $guest = $this->createGuest($room->id, $data['alias']);
         $room->owner_id = $guest->id;
@@ -38,7 +40,7 @@ class JuegoController extends Controller
         return $room;
     }
     public function indexAvailable(){
-        return Room::where('status', 1)->get()->pluck('id');
+        return Room::where('status', 1)->get();
     }
 
     public function indexCreate(Request $request){

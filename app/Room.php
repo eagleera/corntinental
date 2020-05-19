@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Room extends Model
 {
     protected $fillable = [
-        'password', 'status'
+        'password', 'status', 'name'
     ];
 
     public function guests(): HasMany

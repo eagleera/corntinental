@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen pattern-cross-dots-xl bg-dark text-danger p-4">
+    <div class="min-h-screen pattern-cross-dots-xl bg-dark text-danger">
         <router-view></router-view>
     </div>
 </template>

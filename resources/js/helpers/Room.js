@@ -1,6 +1,6 @@
 class Room {
-    create(alias) {
-        axios.post('/api/nuevo_juego', {alias:alias})
+    create(data) {
+        axios.post('/api/nuevo_juego', data)
             .then(res => {
                 console.log(res.data)
                 localStorage.setItem('guest_id', res.data.guest_key)
