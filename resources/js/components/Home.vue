@@ -8,7 +8,7 @@
               v-b-modal.create-room-modal
               variant="outline-primary"
               class="btn-block text-3xl font-bold flex items-center justify-center md:h-48"
-            >Crear un nuevo juego</b-button>
+            >Crear nueva partida</b-button>
           </b-col>
           <b-col class="flex items-center">
             <b-button
@@ -38,7 +38,7 @@
               <div class="column is-12 mt-3">
                 <a
                   class="btn btn-secondary btn-block h-full text-xl font-bold text-white"
-                   @click="() => signup = !signup"
+                  @click="() => signup = !signup"
                 >Crear una cuenta</a>
               </div>
             </div>
@@ -59,10 +59,7 @@
                   placeholder="Introduce tu correo..."
                 ></b-form-input>
               </b-form-group>
-              <b-form-group
-                label="Contraseña:"
-                label-for="login_pwd"
-              >
+              <b-form-group label="Contraseña:" label-for="login_pwd">
                 <b-form-input
                   id="login_pwd"
                   v-model="loginform.password"
@@ -72,7 +69,10 @@
                 ></b-form-input>
               </b-form-group>
               <b-button type="submit" variant="primary" block>Iniciar sesión</b-button>
-              <p class="text-blue cursor-pointer text-center mt-3" @click="() => {login = false; signup = true;}">¿No tienes una cuenta? Crea una ahora</p>
+              <p
+                class="text-blue cursor-pointer text-center mt-3"
+                @click="() => {login = false; signup = true;}"
+              >¿No tienes una cuenta? Crea una ahora</p>
             </b-form>
           </div>
           <div v-if="signup">
@@ -91,10 +91,7 @@
                   placeholder="Introduce tu correo..."
                 ></b-form-input>
               </b-form-group>
-              <b-form-group
-                label="Nombre:"
-                label-for="signup_name"
-              >
+              <b-form-group label="Nombre:" label-for="signup_name">
                 <b-form-input
                   id="signup_name"
                   v-model="signupform.name"
@@ -103,10 +100,7 @@
                   placeholder="Introduce tu nombre..."
                 ></b-form-input>
               </b-form-group>
-              <b-form-group
-                label="Contraseña:"
-                label-for="signup_pwd"
-              >
+              <b-form-group label="Contraseña:" label-for="signup_pwd">
                 <b-form-input
                   id="signup_pwd"
                   v-model="signupform.password"
@@ -115,10 +109,7 @@
                   placeholder="Introduce tu contraseña..."
                 ></b-form-input>
               </b-form-group>
-              <b-form-group
-                label="Confirmar contraseña:"
-                label-for="signup_pwd_confirm"
-              >
+              <b-form-group label="Confirmar contraseña:" label-for="signup_pwd_confirm">
                 <b-form-input
                   id="signup_pwd_confirm"
                   v-model="signupform.password_confirmation"
@@ -128,7 +119,10 @@
                 ></b-form-input>
               </b-form-group>
               <b-button type="submit" variant="primary" block>Crear cuenta</b-button>
-              <p class="text-blue cursor-pointer text-center mt-3" @click="() => {login = true; signup = false;}">¿Ya tienes una cuenta? Inicia sesión</p>
+              <p
+                class="text-blue cursor-pointer text-center mt-3"
+                @click="() => {login = true; signup = false;}"
+              >¿Ya tienes una cuenta? Inicia sesión</p>
             </b-form>
           </div>
         </div>
@@ -151,30 +145,13 @@
         </b-form-group>
       </form>
     </b-modal>
-    <b-modal
-      id="join-room-modal"
-      ref="modal"
-      title="Unirse a una sala"
-      @show="getRooms"
-      @hidden="resetModal"
-      @ok="joinSubmit"
-    >
-      <form ref="formjoin" @submit.stop.prevent="joinSubmit">
-        <b-form-group label="Nombre" label-for="name-input">
-          <b-form-input id="name-input" v-model="alias" required></b-form-input>
-        </b-form-group>
-        <b-form-group label="Número de sala" label-for="sala_id">
-          <b-form-select v-model="sala_id" :options="roomsAvailable"></b-form-select>
-        </b-form-group>
-        <b-form-group label="Contraseña" label-for="pwd">
-          <b-form-input id="pwd" v-model="password" required type="password"></b-form-input>
-        </b-form-group>
-      </form>
-    </b-modal>
+    <join-room />
   </b-container>
 </template>
 
 <script>
+import JoinRoom from "./modals/JoinRoom";
+
 export default {
   data() {
     return {
@@ -186,7 +163,7 @@ export default {
       room_name: "",
       login: false,
       signup: false,
-      loginform:{
+      loginform: {
         email: "",
         password: ""
       },
@@ -197,6 +174,9 @@ export default {
         password_confirmation: ""
       }
     };
+  },
+  components: {
+    JoinRoom
   },
   computed: {
     roomsAvailable() {
@@ -223,30 +203,16 @@ export default {
       this.password = null;
       this.nameState = null;
     },
-    doLogin(){
+    doLogin() {
       User.login(this.loginform);
     },
-    doSignup(){
+    doSignup() {
       User.register(this.signupform);
     },
     createSubmit(bvModalEvt) {
       bvModalEvt.preventDefault();
       this.$nextTick(() => {
         Room.create({ alias: this.alias, room_name: this.room_name });
-        this.$bvModal.hide("modal-prevent-closing");
-      });
-    },
-    joinSubmit(bvModalEvt) {
-      bvModalEvt.preventDefault();
-      this.$nextTick(() => {
-        let data = {
-          alias: this.alias,
-          password: this.password,
-          room_id: this.sala_id
-        };
-        Room.join(data).then(() => {
-          console.log(data);
-        });
         this.$bvModal.hide("modal-prevent-closing");
       });
     }

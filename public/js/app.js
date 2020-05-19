@@ -2011,6 +2011,21 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Layout_Navbar__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Layout/Navbar */ "./resources/js/components/Layout/Navbar.vue");
+/* harmony import */ var _modals_JoinRoom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modals/JoinRoom */ "./resources/js/components/modals/JoinRoom.vue");
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2019,10 +2034,26 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "AuthHome",
   components: {
-    navbar: _Layout_Navbar__WEBPACK_IMPORTED_MODULE_0__["default"]
+    navbar: _Layout_Navbar__WEBPACK_IMPORTED_MODULE_0__["default"],
+    JoinRoom: _modals_JoinRoom__WEBPACK_IMPORTED_MODULE_1__["default"]
+  },
+  data: function data() {
+    return {
+      user: null,
+      record: []
+    };
+  },
+  created: function created() {
+    var _this = this;
+
+    User.getRecord().then(function (data) {
+      _this.user = data.user;
+      _this.record = data.record;
+    });
   }
 });
 
@@ -2037,6 +2068,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _modals_JoinRoom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modals/JoinRoom */ "./resources/js/components/modals/JoinRoom.vue");
 //
 //
 //
@@ -2188,31 +2220,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -2235,6 +2243,9 @@ __webpack_require__.r(__webpack_exports__);
         password_confirmation: ""
       }
     };
+  },
+  components: {
+    JoinRoom: _modals_JoinRoom__WEBPACK_IMPORTED_MODULE_0__["default"]
   },
   computed: {
     roomsAvailable: function roomsAvailable() {
@@ -2282,23 +2293,6 @@ __webpack_require__.r(__webpack_exports__);
 
         _this2.$bvModal.hide("modal-prevent-closing");
       });
-    },
-    joinSubmit: function joinSubmit(bvModalEvt) {
-      var _this3 = this;
-
-      bvModalEvt.preventDefault();
-      this.$nextTick(function () {
-        var data = {
-          alias: _this3.alias,
-          password: _this3.password,
-          room_id: _this3.sala_id
-        };
-        Room.join(data).then(function () {
-          console.log(data);
-        });
-
-        _this3.$bvModal.hide("modal-prevent-closing");
-      });
     }
   }
 });
@@ -2325,8 +2319,27 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
-  name: "Navbar"
+  name: "Navbar",
+  props: {
+    user: Object
+  },
+  methods: {
+    cerrarSesion: function cerrarSesion() {
+      User.logout();
+    }
+  }
 });
 
 /***/ }),
@@ -2423,6 +2436,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "room",
   data: function data() {
@@ -2431,7 +2447,8 @@ __webpack_require__.r(__webpack_exports__);
       room: null,
       is_owner: false,
       me: null,
-      actual_round: 1
+      actual_round: 1,
+      rounds: null
     };
   },
   computed: {
@@ -2513,6 +2530,9 @@ __webpack_require__.r(__webpack_exports__);
         return guest.guest_id == localStorage.getItem("guest_id");
       })[0];
     });
+    Room.getRounds(function (data) {
+      return _this2.rounds = data;
+    });
     Echo.channel("joinChannel").listen("JoinEvent", function (e) {
       if (_this2.$route.params.id == e.id) {
         Room.getData(_this2.$route.params.id).then(function (data) {
@@ -2521,6 +2541,102 @@ __webpack_require__.r(__webpack_exports__);
         });
       }
     });
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/modals/JoinRoom.vue?vue&type=script&lang=js&":
+/*!**************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/modals/JoinRoom.vue?vue&type=script&lang=js& ***!
+  \**************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  name: "JoinRoom",
+  data: function data() {
+    return {
+      form: {
+        alias: null,
+        password: null,
+        room_id: null,
+        user_id: null
+      },
+      rooms: []
+    };
+  },
+  props: {
+    user: [Object, null]
+  },
+  computed: {
+    roomsAvailable: function roomsAvailable() {
+      if (this.rooms.length > 0) {
+        return this.rooms.map(function (room) {
+          return {
+            value: room.id,
+            text: room.name
+          };
+        });
+      }
+
+      return [];
+    }
+  },
+  methods: {
+    initModal: function initModal() {
+      var _this = this;
+
+      if (this.user != null) {
+        this.form.alias = this.user.name;
+        this.form.user_id = this.user.id;
+      }
+
+      Room.getAvailable().then(function (rooms) {
+        _this.rooms = rooms;
+      });
+    },
+    resetModal: function resetModal() {
+      this.form = {
+        alias: null,
+        password: null,
+        room_id: null
+      };
+    },
+    JoinRoom: function JoinRoom(bvModalEvt) {
+      var _this2 = this;
+
+      bvModalEvt.preventDefault();
+      this.$nextTick(function () {
+        Room.join(_this2.form);
+
+        _this2.$bvModal.hide("modal-prevent-closing");
+      });
+    }
   }
 });
 
@@ -85604,7 +85720,81 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [_c("navbar"), _vm._v(" "), _c("p", [_vm._v("hola")])], 1)
+  return _vm.user != null
+    ? _c(
+        "div",
+        [
+          _c("navbar", { attrs: { user: _vm.user } }),
+          _vm._v(" "),
+          _c(
+            "b-card",
+            { staticClass: "m-4 md:m-8" },
+            [
+              _c(
+                "b-row",
+                [
+                  _c(
+                    "b-col",
+                    { attrs: { md: "4", "offset-md": "1" } },
+                    [
+                      _c(
+                        "b-button",
+                        {
+                          staticClass: "md:h-24",
+                          attrs: { variant: "outline-primary", block: "" }
+                        },
+                        [_vm._v("Crear nueva partida")]
+                      )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "b-col",
+                    { attrs: { md: "4", "offset-md": "2" } },
+                    [
+                      _c(
+                        "b-button",
+                        {
+                          directives: [
+                            {
+                              name: "b-modal",
+                              rawName: "v-b-modal.join-room-modal",
+                              modifiers: { "join-room-modal": true }
+                            }
+                          ],
+                          staticClass: "md:h-24",
+                          attrs: { variant: "outline-secondary", block: "" }
+                        },
+                        [_vm._v("Unirse a una partida")]
+                      )
+                    ],
+                    1
+                  )
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c("p", { staticClass: "mt-4 text-2xl font-bold" }, [
+                _vm._v("Historial de partidas")
+              ]),
+              _vm._v(" "),
+              _vm.record == null || _vm.record.length == 0
+                ? _c("div", [
+                    _c("p", { staticClass: "text-black" }, [
+                      _vm._v("Aún no has jugado ninguna partida")
+                    ])
+                  ])
+                : _vm._e()
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c("join-room", { attrs: { user: _vm.user } })
+        ],
+        1
+      )
+    : _vm._e()
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -85661,7 +85851,7 @@ var render = function() {
                             "btn-block text-3xl font-bold flex items-center justify-center md:h-48",
                           attrs: { variant: "outline-primary" }
                         },
-                        [_vm._v("Crear un nuevo juego")]
+                        [_vm._v("Crear nueva partida")]
                       )
                     ],
                     1
@@ -86117,85 +86307,7 @@ var render = function() {
         ]
       ),
       _vm._v(" "),
-      _c(
-        "b-modal",
-        {
-          ref: "modal",
-          attrs: { id: "join-room-modal", title: "Unirse a una sala" },
-          on: { show: _vm.getRooms, hidden: _vm.resetModal, ok: _vm.joinSubmit }
-        },
-        [
-          _c(
-            "form",
-            {
-              ref: "formjoin",
-              on: {
-                submit: function($event) {
-                  $event.stopPropagation()
-                  $event.preventDefault()
-                  return _vm.joinSubmit($event)
-                }
-              }
-            },
-            [
-              _c(
-                "b-form-group",
-                { attrs: { label: "Nombre", "label-for": "name-input" } },
-                [
-                  _c("b-form-input", {
-                    attrs: { id: "name-input", required: "" },
-                    model: {
-                      value: _vm.alias,
-                      callback: function($$v) {
-                        _vm.alias = $$v
-                      },
-                      expression: "alias"
-                    }
-                  })
-                ],
-                1
-              ),
-              _vm._v(" "),
-              _c(
-                "b-form-group",
-                { attrs: { label: "Número de sala", "label-for": "sala_id" } },
-                [
-                  _c("b-form-select", {
-                    attrs: { options: _vm.roomsAvailable },
-                    model: {
-                      value: _vm.sala_id,
-                      callback: function($$v) {
-                        _vm.sala_id = $$v
-                      },
-                      expression: "sala_id"
-                    }
-                  })
-                ],
-                1
-              ),
-              _vm._v(" "),
-              _c(
-                "b-form-group",
-                { attrs: { label: "Contraseña", "label-for": "pwd" } },
-                [
-                  _c("b-form-input", {
-                    attrs: { id: "pwd", required: "", type: "password" },
-                    model: {
-                      value: _vm.password,
-                      callback: function($$v) {
-                        _vm.password = $$v
-                      },
-                      expression: "password"
-                    }
-                  })
-                ],
-                1
-              )
-            ],
-            1
-          )
-        ]
-      )
+      _c("join-room")
     ],
     1
   )
@@ -86230,13 +86342,56 @@ var render = function() {
         "b-navbar",
         { attrs: { variant: "faded", type: "light" } },
         [
-          _c("b-navbar-brand", { attrs: { href: "#" } }, [
-            _c("img", {
-              staticClass: "d-inline-block align-top",
-              attrs: { src: "https://placekitten.com/g/30/30", alt: "Kitten" }
-            }),
-            _vm._v("\n      BootstrapVue\n    ")
-          ])
+          _c(
+            "b-navbar-brand",
+            { staticClass: "flex items-center", attrs: { href: "#" } },
+            [
+              _c("img", {
+                staticClass: "d-inline-block align-top rounded-full",
+                attrs: {
+                  src:
+                    "https://api.adorable.io/avatars/50/" +
+                    _vm.user.id +
+                    ".png",
+                  alt: "Kitten"
+                }
+              }),
+              _vm._v(" "),
+              _c("span", { staticClass: "ml-2" }, [
+                _vm._v("\n      " + _vm._s(_vm.user.name) + "\n      ")
+              ])
+            ]
+          ),
+          _vm._v(" "),
+          _c(
+            "b-navbar-nav",
+            { staticClass: "ml-auto" },
+            [
+              _c(
+                "b-nav-item-dropdown",
+                {
+                  attrs: { right: "" },
+                  scopedSlots: _vm._u([
+                    {
+                      key: "button-content",
+                      fn: function() {
+                        return [_c("span", [_vm._v("Opciones")])]
+                      },
+                      proxy: true
+                    }
+                  ])
+                },
+                [
+                  _vm._v(" "),
+                  _c("b-dropdown-item", { on: { click: _vm.cerrarSesion } }, [
+                    _vm._v("Cerrar sesión")
+                  ])
+                ],
+                1
+              )
+            ],
+            1
+          )
         ],
         1
       )
@@ -86266,260 +86421,293 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm.room != null
-    ? _c(
-        "div",
-        { staticClass: "card rounded-sm p-4 text-primary" },
-        [
-          _c("div", { staticClass: "row" }, [
-            _c("div", { staticClass: "col-12 col-md-8" }, [
-              _c("p", { staticClass: "text-2xl font-bold" }, [
-                _vm._v(
-                  "Sala #" +
-                    _vm._s(_vm.room.id) +
-                    ", eres " +
-                    _vm._s(_vm.me.alias)
-                )
+  return _c("div", { staticClass: "pt-8" }, [
+    _vm.room != null
+      ? _c(
+          "div",
+          { staticClass: "card rounded-sm p-4 text-primary mx-4" },
+          [
+            _c("div", { staticClass: "row" }, [
+              _c("div", { staticClass: "col-12 col-md-8" }, [
+                _c("p", { staticClass: "text-2xl font-bold" }, [
+                  _vm._v(
+                    "Sala #" +
+                      _vm._s(_vm.room.id) +
+                      ", eres " +
+                      _vm._s(_vm.me.alias)
+                  )
+                ])
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "col-12 col-md-4" }, [
+                _c("p", { staticClass: "text-xl" }, [_vm._v("Contraseña:")]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "flex justify-between text-2xl" },
+                  _vm._l(_vm.pwdArray, function(letra, index) {
+                    return _c(
+                      "div",
+                      {
+                        key: index,
+                        staticClass:
+                          "bg-light px-2 py-2 rounded-md font-bold text-danger"
+                      },
+                      [_vm._v(_vm._s(letra))]
+                    )
+                  }),
+                  0
+                ),
+                _vm._v("\n        " + _vm._s(_vm.actual_round) + "\n      ")
               ])
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "col-12 col-md-4" }, [
-              _c("p", { staticClass: "text-xl" }, [_vm._v("Contraseña:")]),
-              _vm._v(" "),
-              _c(
-                "div",
-                { staticClass: "flex justify-between text-2xl" },
-                _vm._l(_vm.pwdArray, function(letra, index) {
-                  return _c(
-                    "div",
-                    {
-                      key: index,
-                      staticClass:
-                        "bg-light px-2 py-2 rounded-md font-bold text-danger"
-                    },
-                    [_vm._v(_vm._s(letra))]
-                  )
-                }),
-                0
-              )
-            ])
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "row mt-4" }, [
-            _c("div", { staticClass: "table-responsive" }, [
-              _c("table", { staticClass: "table table-bordered" }, [
-                _c("thead", { staticClass: "thead-dark" }, [
-                  _c(
-                    "tr",
-                    [
-                      _c("th", [_vm._v("Rondas / Jugadores")]),
-                      _vm._v(" "),
-                      _vm._l(_vm.room.guests, function(guest) {
-                        return _c("th", { key: guest.id }, [
-                          _vm._v(_vm._s(guest.alias))
-                        ])
-                      })
-                    ],
-                    2
-                  )
-                ]),
-                _vm._v(" "),
-                _c("tbody", [
-                  _c(
-                    "tr",
-                    [
-                      _c("td", [_vm._v("#6")]),
-                      _vm._v(" "),
-                      _vm._l(_vm.round(1), function(round, index) {
-                        return _c("td", { key: index }, [
-                          _vm._v(_vm._s(round.points))
-                        ])
-                      })
-                    ],
-                    2
-                  ),
+            _c("div", { staticClass: "row mt-4" }, [
+              _c("div", { staticClass: "table-responsive" }, [
+                _c("table", { staticClass: "table table-bordered" }, [
+                  _c("thead", { staticClass: "thead-dark" }, [
+                    _c(
+                      "tr",
+                      [
+                        _c("th", [_vm._v("Rondas / Jugadores")]),
+                        _vm._v(" "),
+                        _vm._l(_vm.room.guests, function(guest) {
+                          return _c("th", { key: guest.id }, [
+                            _vm._v(_vm._s(guest.alias))
+                          ])
+                        })
+                      ],
+                      2
+                    )
+                  ]),
                   _vm._v(" "),
                   _c(
-                    "tr",
-                    [
-                      _c("td", [_vm._v("#7")]),
-                      _vm._v(" "),
-                      _vm._l(_vm.round(2), function(round, index) {
-                        return _c("td", { key: index }, [
-                          _vm._v(_vm._s(round.points))
-                        ])
-                      })
-                    ],
-                    2
+                    "tbody",
+                    _vm._l(7, function(n) {
+                      return _c(
+                        "tr",
+                        {
+                          key: n,
+                          class: { "text-danger": _vm.actual_round == 1 }
+                        },
+                        [
+                          _c("td", [_vm._v("#6")]),
+                          _vm._v(" "),
+                          _vm._l(_vm.round(n), function(round, index) {
+                            return _c("td", { key: index }, [
+                              _vm._v(_vm._s(round.points))
+                            ])
+                          })
+                        ],
+                        2
+                      )
+                    }),
+                    0
                   ),
                   _vm._v(" "),
-                  _c(
-                    "tr",
-                    [
-                      _c("td", [_vm._v("#8")]),
-                      _vm._v(" "),
-                      _vm._l(_vm.round(3), function(round, index) {
-                        return _c("td", { key: index }, [
-                          _vm._v(_vm._s(round.points))
-                        ])
-                      })
-                    ],
-                    2
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    [
-                      _c("td", [_vm._v("#9")]),
-                      _vm._v(" "),
-                      _vm._l(_vm.round(4), function(round, index) {
-                        return _c("td", { key: index }, [
-                          _vm._v(_vm._s(round.points))
-                        ])
-                      })
-                    ],
-                    2
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    [
-                      _c("td", [_vm._v("#10")]),
-                      _vm._v(" "),
-                      _vm._l(_vm.round(5), function(round, index) {
-                        return _c("td", { key: index }, [
-                          _vm._v(_vm._s(round.points))
-                        ])
-                      })
-                    ],
-                    2
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    [
-                      _c("td", [_vm._v("#11")]),
-                      _vm._v(" "),
-                      _vm._l(_vm.round(6), function(round, index) {
-                        return _c("td", { key: index }, [
-                          _vm._v(_vm._s(round.points))
-                        ])
-                      })
-                    ],
-                    2
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    [
-                      _c("td", [_vm._v("#12")]),
-                      _vm._v(" "),
-                      _vm._l(_vm.round(7), function(round, index) {
-                        return _c("td", { key: index }, [
-                          _vm._v(_vm._s(round.points))
-                        ])
-                      })
-                    ],
-                    2
-                  )
-                ]),
-                _vm._v(" "),
-                _c("tfoot", [
-                  _c(
-                    "tr",
-                    [
-                      _c("td", [_vm._v("Totales:")]),
-                      _vm._v(" "),
-                      _vm._l(_vm.room.guests, function(guest) {
-                        return _c("th", { key: guest.id }, [
-                          _vm._v(_vm._s(_vm.total(guest.id)))
-                        ])
-                      })
-                    ],
-                    2
-                  )
+                  _c("tfoot", [
+                    _c(
+                      "tr",
+                      [
+                        _c("td", [_vm._v("Totales:")]),
+                        _vm._v(" "),
+                        _vm._l(_vm.room.guests, function(guest) {
+                          return _c("th", { key: guest.id }, [
+                            _vm._v(_vm._s(_vm.total(guest.id)))
+                          ])
+                        })
+                      ],
+                      2
+                    )
+                  ])
                 ])
               ])
-            ])
-          ]),
-          _vm._v(" "),
-          _vm.is_owner
-            ? _c(
-                "div",
-                [
-                  _c(
-                    "b-button",
-                    {
-                      directives: [
-                        {
-                          name: "b-modal",
-                          rawName: "v-b-modal.results-modal",
-                          modifiers: { "results-modal": true }
+            ]),
+            _vm._v(" "),
+            _vm.is_owner
+              ? _c(
+                  "div",
+                  [
+                    _c(
+                      "b-button",
+                      {
+                        directives: [
+                          {
+                            name: "b-modal",
+                            rawName: "v-b-modal.results-modal",
+                            modifiers: { "results-modal": true }
+                          }
+                        ],
+                        attrs: { variant: "success" }
+                      },
+                      [_vm._v("Anotar resultados de ronda")]
+                    )
+                  ],
+                  1
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _c(
+              "b-modal",
+              {
+                ref: "modal",
+                attrs: { id: "results-modal", title: "Resultados de la ronda" },
+                on: { ok: _vm.nextRound }
+              },
+              [
+                _c(
+                  "form",
+                  {
+                    ref: "nextroundform",
+                    on: {
+                      submit: function($event) {
+                        $event.stopPropagation()
+                        $event.preventDefault()
+                        return _vm.nextRound($event)
+                      }
+                    }
+                  },
+                  _vm._l(_vm.room.guests, function(guest) {
+                    return _c(
+                      "b-form-group",
+                      {
+                        key: guest.id,
+                        attrs: {
+                          label: guest.alias,
+                          "label-for": "name-input",
+                          "invalid-feedback": "El nombre es obligatorio"
                         }
+                      },
+                      [
+                        _c("b-form-input", {
+                          attrs: { id: "name-input", required: "" },
+                          model: {
+                            value: guest.points,
+                            callback: function($$v) {
+                              _vm.$set(guest, "points", $$v)
+                            },
+                            expression: "guest.points"
+                          }
+                        })
                       ],
-                      attrs: { variant: "success" }
-                    },
-                    [_vm._v("Anotar resultados de ronda")]
-                  )
-                ],
-                1
-              )
-            : _vm._e(),
+                      1
+                    )
+                  }),
+                  1
+                )
+              ]
+            )
+          ],
+          1
+        )
+      : _vm._e()
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/modals/JoinRoom.vue?vue&type=template&id=0204915a&":
+/*!******************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/modals/JoinRoom.vue?vue&type=template&id=0204915a& ***!
+  \******************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "b-modal",
+    {
+      ref: "modal",
+      attrs: { id: "join-room-modal", title: "Unirse a una partida" },
+      on: { show: _vm.initModal, hidden: _vm.resetModal, ok: _vm.JoinRoom }
+    },
+    [
+      _c(
+        "form",
+        {
+          ref: "formjoin",
+          on: {
+            submit: function($event) {
+              $event.stopPropagation()
+              $event.preventDefault()
+              return _vm.joinSubmit($event)
+            }
+          }
+        },
+        [
+          _c(
+            "b-form-group",
+            { attrs: { label: "Tu nombre", "label-for": "name-input" } },
+            [
+              _c("b-form-input", {
+                attrs: {
+                  id: "name-input",
+                  required: "",
+                  disabled: _vm.user != null
+                },
+                model: {
+                  value: _vm.form.alias,
+                  callback: function($$v) {
+                    _vm.$set(_vm.form, "alias", $$v)
+                  },
+                  expression: "form.alias"
+                }
+              })
+            ],
+            1
+          ),
           _vm._v(" "),
           _c(
-            "b-modal",
-            {
-              ref: "modal",
-              attrs: { id: "results-modal", title: "Resultados de la ronda" },
-              on: { ok: _vm.nextRound }
-            },
+            "b-form-group",
+            { attrs: { label: "Número de sala", "label-for": "sala_id" } },
             [
-              _c(
-                "form",
-                {
-                  ref: "nextroundform",
-                  on: {
-                    submit: function($event) {
-                      $event.stopPropagation()
-                      $event.preventDefault()
-                      return _vm.nextRound($event)
-                    }
-                  }
-                },
-                _vm._l(_vm.room.guests, function(guest) {
-                  return _c(
-                    "b-form-group",
-                    {
-                      key: guest.id,
-                      attrs: {
-                        label: guest.alias,
-                        "label-for": "name-input",
-                        "invalid-feedback": "El nombre es obligatorio"
-                      }
-                    },
-                    [
-                      _c("b-form-input", {
-                        attrs: { id: "name-input", required: "" },
-                        model: {
-                          value: guest.points,
-                          callback: function($$v) {
-                            _vm.$set(guest, "points", $$v)
-                          },
-                          expression: "guest.points"
-                        }
-                      })
-                    ],
-                    1
-                  )
-                }),
-                1
-              )
-            ]
+              _c("b-form-select", {
+                attrs: { options: _vm.roomsAvailable },
+                model: {
+                  value: _vm.form.room_id,
+                  callback: function($$v) {
+                    _vm.$set(_vm.form, "room_id", $$v)
+                  },
+                  expression: "form.room_id"
+                }
+              })
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "b-form-group",
+            { attrs: { label: "Contraseña", "label-for": "pwd" } },
+            [
+              _c("b-form-input", {
+                attrs: { id: "pwd", required: "", type: "password" },
+                model: {
+                  value: _vm.form.password,
+                  callback: function($$v) {
+                    _vm.$set(_vm.form, "password", $$v)
+                  },
+                  expression: "form.password"
+                }
+              })
+            ],
+            1
           )
         ],
         1
       )
-    : _vm._e()
+    ]
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -101694,6 +101882,8 @@ try {
 
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+var JWTtoken = "Bearer ".concat(localStorage.getItem('access_token'));
+window.axios.defaults.headers.common['Authorization'] = JWTtoken;
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
@@ -102125,6 +102315,75 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/modals/JoinRoom.vue":
+/*!*****************************************************!*\
+  !*** ./resources/js/components/modals/JoinRoom.vue ***!
+  \*****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _JoinRoom_vue_vue_type_template_id_0204915a___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./JoinRoom.vue?vue&type=template&id=0204915a& */ "./resources/js/components/modals/JoinRoom.vue?vue&type=template&id=0204915a&");
+/* harmony import */ var _JoinRoom_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./JoinRoom.vue?vue&type=script&lang=js& */ "./resources/js/components/modals/JoinRoom.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _JoinRoom_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _JoinRoom_vue_vue_type_template_id_0204915a___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _JoinRoom_vue_vue_type_template_id_0204915a___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/modals/JoinRoom.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/modals/JoinRoom.vue?vue&type=script&lang=js&":
+/*!******************************************************************************!*\
+  !*** ./resources/js/components/modals/JoinRoom.vue?vue&type=script&lang=js& ***!
+  \******************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_JoinRoom_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./JoinRoom.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/modals/JoinRoom.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_JoinRoom_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/modals/JoinRoom.vue?vue&type=template&id=0204915a&":
+/*!************************************************************************************!*\
+  !*** ./resources/js/components/modals/JoinRoom.vue?vue&type=template&id=0204915a& ***!
+  \************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_JoinRoom_vue_vue_type_template_id_0204915a___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./JoinRoom.vue?vue&type=template&id=0204915a& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/modals/JoinRoom.vue?vue&type=template&id=0204915a&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_JoinRoom_vue_vue_type_template_id_0204915a___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_JoinRoom_vue_vue_type_template_id_0204915a___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/helpers/Room.js":
 /*!**************************************!*\
   !*** ./resources/js/helpers/Room.js ***!
@@ -102148,11 +102407,11 @@ var Room = /*#__PURE__*/function () {
   _createClass(Room, [{
     key: "create",
     value: function create(data) {
-      axios.post('/api/nuevo_juego', data).then(function (res) {
+      axios.post("/api/nuevo_juego", data).then(function (res) {
         console.log(res.data);
-        localStorage.setItem('guest_id', res.data.guest_key);
+        localStorage.setItem("guest_id", res.data.guest_key);
         document.cookie = "guest_id=" + res.data.guest_key;
-        window.location = '/juego/' + res.data.id;
+        window.location = "/juego/" + res.data.id;
       })["catch"](function (error) {
         return console.log(error.response.data);
       });
@@ -102160,11 +102419,11 @@ var Room = /*#__PURE__*/function () {
   }, {
     key: "join",
     value: function join(data) {
-      axios.put('/api/unirse_juego', data).then(function (res) {
+      axios.put("/api/unirse_juego", data).then(function (res) {
         console.log(res.data);
-        localStorage.setItem('guest_id', res.data.guest_key);
+        localStorage.setItem("guest_id", res.data.guest_key);
         document.cookie = "guest_id=" + res.data.guest_key;
-        window.location = '/juego/' + res.data.id;
+        window.location = "/juego/" + res.data.id;
       })["catch"](function (error) {
         return console.log(error.response.data);
       });
@@ -102172,7 +102431,7 @@ var Room = /*#__PURE__*/function () {
   }, {
     key: "getAvailable",
     value: function getAvailable() {
-      return axios.get('/api/rooms_available').then(function (res) {
+      return axios.get("/api/rooms_available").then(function (res) {
         return res.data;
       })["catch"](function (error) {
         return console.log(error.response.data);
@@ -102182,6 +102441,15 @@ var Room = /*#__PURE__*/function () {
     key: "getData",
     value: function getData(id) {
       return axios.get("/api/juego/".concat(id)).then(function (res) {
+        return res.data;
+      })["catch"](function (error) {
+        window.location = "../";
+      });
+    }
+  }, {
+    key: "getRounds",
+    value: function getRounds() {
+      return axios.get("/api/rounds").then(function (res) {
         return res.data;
       })["catch"](function (error) {
         return console.log(error.response.data);
@@ -102236,14 +102504,30 @@ var User = /*#__PURE__*/function () {
       });
     }
   }, {
+    key: "logout",
+    value: function logout() {
+      localStorage.removeItem('access_token');
+      location.reload();
+    }
+  }, {
     key: "register",
     value: function register(data) {
       axios.post('/api/auth/signup', data).then(function (res) {
-        console.log(res.data); // localStorage.setItem('guest_id', res.data.guest_key)
-        // document.cookie = "guest_id="+ res.data.guest_key;
-        // window.location = '/juego/' + res.data.id;
+        console.log(res.data);
+        localStorage.setItem('access_token', res.data.access_token);
+        location.reload();
       })["catch"](function (error) {
         return console.log(error.response.data);
+      });
+    }
+  }, {
+    key: "getRecord",
+    value: function getRecord() {
+      return axios.get('/api/record').then(function (res) {
+        return res.data;
+      })["catch"](function (error) {
+        localStorage.removeItem('access_token');
+        location.reload();
       });
     }
   }, {

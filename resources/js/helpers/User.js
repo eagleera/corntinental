@@ -7,15 +7,28 @@ class User {
             })
             .catch(error => console.log(error.response.data))
     }
+    logout(){
+        localStorage.removeItem('access_token');
+        location.reload();
+    }
     register(data) {
         axios.post('/api/auth/signup', data)
             .then(res => {
                 console.log(res.data)
-                // localStorage.setItem('guest_id', res.data.guest_key)
-                // document.cookie = "guest_id="+ res.data.guest_key;
-                // window.location = '/juego/' + res.data.id;
+                localStorage.setItem('access_token', res.data.access_token);
+                location.reload();
             })
             .catch(error => console.log(error.response.data))
+    }
+    getRecord(){
+        return axios.get('/api/record')
+            .then(res => {
+                return res.data;
+            })
+            .catch(error => {
+                localStorage.removeItem('access_token');
+                location.reload();
+            })
     }
     loggedIn(){
         if(localStorage.getItem('access_token')){

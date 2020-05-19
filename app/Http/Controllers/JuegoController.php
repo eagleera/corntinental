@@ -32,8 +32,8 @@ class JuegoController extends Controller
         return $room;
     }
     public function index(Request $request, $room_id){
-        $cookie = $request->cookie('guest_id');
-        if(!$cookie){
+        $user = auth()->user();
+        if(!$user){
             abort(404);
         }
         $room = Room::with('guests', 'points', 'owner')->find($room_id);
@@ -69,13 +69,14 @@ class JuegoController extends Controller
         $data= $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'password' => 'required|max:5',
-            'alias' => 'sometimes'
+            'alias' => 'sometimes',
+            'user_id' => 'sometimes|exists:users,id',
         ]);
         $room = Room::where(['id' => $data['room_id'], 'password' => $data['password']])->first();
         if(!$room){
             abort(404);
         }
-        $guest = $this->createGuest($room->id, $data['alias']);
+        $guest = $this->createGuest($room->id, $data['alias'], $data['user_id']);
         broadcast(new JoinEvent($room->id, $guest))->toOthers();
         $room->guest_key = $guest->guest_id;
         return $room;
@@ -98,36 +99,31 @@ class JuegoController extends Controller
         return Room::with('points', 'guests', 'owner')->find($room_id);
     }
 
-    function createGuest($room_id, $alias){
+    public function record(Request $request){
+        $user = auth()->user();
+        if(!$user){
+            abort(404);
+        }
+        $games = Guest::where('user_id', $user->getKey())->with('room', 'points')->get();
+        $reponse = [];
+        $response['user'] = $user;
+        $response['record'] = $games;
+        return $response;
+    }
+    public function getRounds(){
+        return Round::all();
+    }
+
+    function createGuest($room_id, $alias, $user_id = null){
         $cookie_val = md5($_SERVER['REMOTE_ADDR'] . time());
         $guest = new Guest;
         $guest->alias = $alias;
         $guest->room_id = $room_id;
         $guest->guest_id = $cookie_val;
+        if($user_id){
+            $guest->user_id = $user_id;
+        }
         $guest->save();
         return $guest;
-    }
-
-    public function editUser($user_id){
-        $user = User::find($user_id);
-        return view('edit_user')->with('user', $user);
-    }
-    public function handleEditUser(Request $request){
-        $id = $request->input('id');
-        $name = $request->input('name');
-        $email = $request->input('email');
-        $user = User::find($id);
-        $user->name = $name;
-        $user->email = $email;
-        $user->save();
-        return redirect(RouteServiceProvider::ADMIN);
-    }
-    public function deleteUser($id){
-        User::destroy($id);
-        return redirect(RouteServiceProvider::ADMIN);
-    }
-    function getUser(){
-        $cookie = $request->cookie('guest_id');
-        return Guest::where('guest_id', $cookie)->first();
     }
 }
