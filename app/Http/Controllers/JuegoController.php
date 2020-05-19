@@ -18,14 +18,15 @@ class JuegoController extends Controller
     {
         $data= $request->validate([
             'alias' => 'sometimes',
-            'room_name' => 'required|string'
+            'room_name' => 'required|string',
+            'user_id' => 'sometimes|exists:users,id',
         ]);
         $room = new Room;
         $room->password = substr(str_shuffle("0123456789"), 0, 5);
         $room->status = true;
         $room->name = $data['room_name'];
         $room->save();
-        $guest = $this->createGuest($room->id, $data['alias']);
+        $guest = $this->createGuest($room->id, $data['alias'], $data['user_id']);
         $room->owner_id = $guest->id;
         $room->save();
         $room->guest_key = $guest->guest_id;

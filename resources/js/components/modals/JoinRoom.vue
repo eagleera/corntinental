@@ -7,15 +7,15 @@
     @hidden="resetModal"
     @ok="JoinRoom"
   >
-    <form ref="formjoin" @submit.stop.prevent="joinSubmit">
+    <form ref="formjoin" @submit.stop.prevent="JoinRoom">
       <b-form-group label="Tu nombre" label-for="name-input">
-        <b-form-input id="name-input" v-model="form.alias" required :disabled="user != null"></b-form-input>
+        <b-form-input id="name-input" v-model="form.alias" required :disabled="user != null" />
       </b-form-group>
       <b-form-group label="Número de sala" label-for="sala_id">
-        <b-form-select v-model="form.room_id" :options="roomsAvailable"></b-form-select>
+        <b-form-select v-model="form.room_id" :options="roomsAvailable" />
       </b-form-group>
       <b-form-group label="Contraseña" label-for="pwd">
-        <b-form-input id="pwd" v-model="form.password" required type="password"></b-form-input>
+        <b-form-input id="pwd" v-model="form.password" required type="password" />
       </b-form-group>
     </form>
   </b-modal>

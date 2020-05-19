@@ -1,9 +1,11 @@
 <template>
+<div>
+  <navbar v-if="user != nulls" :user="user" />
   <div class="pt-8">
     <div class="card rounded-sm p-4 text-primary mx-4" v-if="room != null">
       <div class="row">
         <div class="col-12 col-md-8">
-          <p class="text-2xl font-bold">Sala #{{room.id}}, eres {{ me.alias }}</p>
+          <p class="text-2xl font-bold">{{room.name}}, eres {{me}} {{ me.alias }}</p>
         </div>
         <div class="col-12 col-md-4">
           <p class="text-xl">Contraseña:</p>
@@ -83,8 +85,12 @@
       </b-modal>
     </div>
   </div>
+  </div>
 </template>
+
 <script>
+import navbar from "./Layout/Navbar";
+
 export default {
   name: "room",
   data() {
@@ -96,6 +102,9 @@ export default {
       actual_round: 1,
       rounds: null
     };
+  },
+  components:{
+    navbar
   },
   computed: {
     pwdArray() {

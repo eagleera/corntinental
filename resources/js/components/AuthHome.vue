@@ -4,7 +4,7 @@
     <b-card class="m-4 md:m-8">
       <b-row>
         <b-col md="4" offset-md="1">
-          <b-button variant="outline-primary" class="md:h-24" block>Crear nueva partida</b-button>
+          <b-button v-b-modal.create-room-modal variant="outline-primary" class="md:h-24" block>Crear nueva partida</b-button>
         </b-col>
         <b-col md="4" offset-md="2">
           <b-button v-b-modal.join-room-modal variant="outline-secondary" class="md:h-24" block>Unirse a una partida</b-button>
@@ -16,18 +16,21 @@
       </div>
     </b-card>
     <join-room :user="user" />
+    <create-room :user="user" />
   </div>
 </template>
 
 <script>
 import navbar from "./Layout/Navbar";
 import JoinRoom from "./modals/JoinRoom";
+import CreateRoom from "./modals/CreateRoom";
 
 export default {
   name: "AuthHome",
   components: {
     navbar,
-    JoinRoom
+    JoinRoom,
+    CreateRoom
   },
   data(){
     return {

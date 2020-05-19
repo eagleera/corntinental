@@ -8,14 +8,14 @@
               v-b-modal.create-room-modal
               variant="outline-primary"
               class="btn-block text-3xl font-bold flex items-center justify-center md:h-48"
-            >Crear nueva partida</b-button>
+            >Crear nueva mesa</b-button>
           </b-col>
           <b-col class="flex items-center">
             <b-button
               v-b-modal.join-room-modal
               variant="outline-secondary"
               class="btn-block text-3xl font-bold flex items-center justify-center mt-4 md:h-48"
-            >Unirse a una partida</b-button>
+            >Unirse a una mesa</b-button>
           </b-col>
         </b-row>
       </b-col>
@@ -128,39 +128,18 @@
         </div>
       </div>
     </b-row>
-    <b-modal
-      id="create-room-modal"
-      ref="modal"
-      title="Crear nueva mesa"
-      @show="resetModal"
-      @hidden="resetModal"
-      @ok="createSubmit"
-    >
-      <form ref="formcreate" @submit.stop.prevent="createSubmit">
-        <b-form-group label="Nombre de la mesa" label-for="name-input">
-          <b-form-input id="name-input" v-model="room_name" required></b-form-input>
-        </b-form-group>
-        <b-form-group label="Tu nombre" label-for="name-input">
-          <b-form-input id="name-input" v-model="alias" required></b-form-input>
-        </b-form-group>
-      </form>
-    </b-modal>
     <join-room />
+    <create-room />
   </b-container>
 </template>
 
 <script>
 import JoinRoom from "./modals/JoinRoom";
+import CreateRoom from "./modals/CreateRoom";
 
 export default {
   data() {
     return {
-      nameState: null,
-      alias: "",
-      sala_id: null,
-      password: "",
-      rooms: [],
-      room_name: "",
       login: false,
       signup: false,
       loginform: {
@@ -176,46 +155,16 @@ export default {
     };
   },
   components: {
-    JoinRoom
-  },
-  computed: {
-    roomsAvailable() {
-      if (this.rooms.length > 0) {
-        return this.rooms.map(room => {
-          return {
-            value: room,
-            text: room.name
-          };
-        });
-      }
-      return [];
-    }
+    JoinRoom,
+    CreateRoom
   },
   methods: {
-    getRooms() {
-      Room.getAvailable().then(rooms => {
-        this.rooms = rooms;
-      });
-    },
-    resetModal() {
-      this.alias = "";
-      this.sala_id = null;
-      this.password = null;
-      this.nameState = null;
-    },
     doLogin() {
       User.login(this.loginform);
     },
     doSignup() {
       User.register(this.signupform);
     },
-    createSubmit(bvModalEvt) {
-      bvModalEvt.preventDefault();
-      this.$nextTick(() => {
-        Room.create({ alias: this.alias, room_name: this.room_name });
-        this.$bvModal.hide("modal-prevent-closing");
-      });
-    }
   }
 };
 </script>
