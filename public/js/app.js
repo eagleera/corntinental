@@ -2035,6 +2035,26 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -2048,8 +2068,39 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       user: null,
-      record: []
+      record: [],
+      fields: [{
+        key: "mesa",
+        label: "Mesa"
+      }, {
+        key: "puntos",
+        label: "Puntos"
+      }, {
+        key: "rondas",
+        label: "Rondas ganadas"
+      }, {
+        key: "lugar",
+        label: "Lugar"
+      }, {
+        key: "btn",
+        label: ""
+      }]
     };
+  },
+  computed: {
+    calcRecords: function calcRecords() {
+      if (this.record.length > 0) {
+        return this.record.map(function (x) {
+          return {
+            mesa: x.room.name,
+            mesa_id: x.room.id,
+            puntos: x.points,
+            rondas: x.won,
+            lugar: x.place
+          };
+        });
+      }
+    }
   },
   created: function created() {
     var _this = this;
@@ -2298,6 +2349,9 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
+//
 //
 //
 //
@@ -85857,7 +85911,44 @@ var render = function() {
                       _vm._v("Aún no has jugado ninguna partida")
                     ])
                   ])
-                : _vm._e()
+                : _c(
+                    "div",
+                    [
+                      _c("b-table", {
+                        attrs: {
+                          striped: "",
+                          hover: "",
+                          items: _vm.calcRecords,
+                          fields: _vm.fields
+                        },
+                        scopedSlots: _vm._u(
+                          [
+                            {
+                              key: "cell(btn)",
+                              fn: function(row) {
+                                return [
+                                  _c(
+                                    "b-button",
+                                    {
+                                      attrs: {
+                                        size: "sm",
+                                        href: "/juego/" + row.item.mesa_id
+                                      }
+                                    },
+                                    [_vm._v("Ver detalles")]
+                                  )
+                                ]
+                              }
+                            }
+                          ],
+                          null,
+                          false,
+                          4141031807
+                        )
+                      })
+                    ],
+                    1
+                  )
             ],
             1
           ),
@@ -86468,9 +86559,22 @@ var render = function() {
                 ? _c(
                     "div",
                     [
-                      _c("p", { staticClass: "text-2xl" }, [
-                        _vm._v("La partida ha terminado")
-                      ]),
+                      _c(
+                        "p",
+                        { staticClass: "text-2xl text-danger" },
+                        [
+                          _vm._v("La partida ha terminado\n          "),
+                          _c(
+                            "b-button",
+                            {
+                              staticClass: "ml-4",
+                              attrs: { variant: "outline-primary", href: "/" }
+                            },
+                            [_vm._v("Regresar a inicio")]
+                          )
+                        ],
+                        1
+                      ),
                       _vm._v(" "),
                       _c(
                         "b-row",
@@ -86529,6 +86633,21 @@ var render = function() {
                                                 _vm._v(
                                                   _vm._s(_vm.winners[1].won) +
                                                     " juegos ganados "
+                                                )
+                                              ]
+                                            ),
+                                            _vm._v(" "),
+                                            _c(
+                                              "p",
+                                              {
+                                                staticClass:
+                                                  "text-sm text-white font-light"
+                                              },
+                                              [
+                                                _vm._v(
+                                                  _vm._s(
+                                                    _vm.winners[1].points
+                                                  ) + " Puntos"
                                                 )
                                               ]
                                             ),

@@ -38,32 +38,11 @@ class JuegoController extends Controller
         $room = Room::with('guests', 'points', 'owner')->find($room_id);
         return $room;
     }
+
     public function indexAvailable(){
         return Room::where('status', 1)->get();
     }
-
-    public function indexCreate(Request $request){
-        $cookie = $request->cookie('guest_id');
-        if($cookie){
-            $room_id = Guest::where('guest_id', $cookie)->first()->room_id;
-            return redirect()->action(
-                'JuegoController@index', ['id' => $room_id]
-            );
-        }
-        return view('create_room');
-    }
-    public function indexJoin(Request $request){
-        $cookie = $request->cookie('guest_id');
-        if($cookie){
-            $room_id = Guest::where('guest_id', $cookie)->first()->room_id;
-            return redirect()->action(
-                'JuegoController@index', ['id' => $room_id]
-            );
-        }
-        $rooms = Room::where('status', 1)->get()->pluck('id');
-        return view('join_room')->with('rooms', $rooms);
-    }
-
+    
     public function joinRoom(Request $request){
         $data= $request->validate([
             'room_id' => 'required|exists:rooms,id',
@@ -94,6 +73,10 @@ class JuegoController extends Controller
             $point->points = $round['points'];
             $point->save();
         }
+        if($data['actual'] == 7){
+            $room->status = false;
+            $room->save();
+        }
         broadcast(new JoinEvent($room->id, $room))->toOthers();
         return Room::with('points', 'guests', 'owner')->find($room_id);
     }
@@ -103,10 +86,28 @@ class JuegoController extends Controller
         if(!$user){
             abort(404);
         }
-        $games = Guest::where('user_id', $user->getKey())->with('room', 'points')->get();
-        $reponse = [];
+        $guests = Guest::with('room')->where('user_id', $user->getKey())->get();
+        $record = [];
+        foreach($guests as &$guest){
+            $plays = Room::record($guest->room_id)->get();
+            $plays = $this->roundsWonPerPlayer($plays, "guest_id");
+            usort($plays, function ($guest1, $guest2) {
+                return $guest1['points'] <=> $guest2['points'];
+            });
+            $place = 0;
+            foreach($plays as $key=>$value){
+                if($value['guest_id'] == $guest->getKey()){
+                    $place = $key;
+                break;
+                }
+            }
+            $plays = $plays[$place];
+            $plays['room'] = $guest->room;
+            $plays['place'] = $place + 1;
+            $record[] = $plays;
+        }
         $response['user'] = $user;
-        $response['record'] = $games;
+        $response['record'] = $record;
         return $response;
     }
     public function getRounds(){
@@ -130,9 +131,9 @@ class JuegoController extends Controller
         return $guest;
     }
 
-    function roundsWonPerPlayer($room){
+    function roundsWonPerPlayer($room, $guest_id = null){
         $guests = $this->groupBy($room, "guest_id");
-        foreach($guests as &$guest){
+        foreach($guests as $key => &$guest){
             $won = 0;
             $points = 0;
             $alias = "";
@@ -146,6 +147,7 @@ class JuegoController extends Controller
             $guest = array();
             $guest['won'] = $won;
             $guest['alias'] = $alias;
+            $guest['guest_id'] = $key;
             $guest['points'] = $points;
         }
         return $guests;

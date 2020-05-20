@@ -18,7 +18,9 @@
           </div>
         </div>
         <div v-if="actual_round == 8">
-          <p class="text-2xl">La partida ha terminado</p>
+          <p class="text-2xl text-danger">La partida ha terminado
+            <b-button variant="outline-primary" class="ml-4" href="/">Regresar a inicio</b-button>
+          </p>
           <b-row class="items-center">
             <b-col v-if="winners.length >= 2">
               <div class="rounded-lg bg-silver shadow border-0 flex items-center pl-4 p-3">
@@ -29,6 +31,7 @@
                   <b-col class="flex flex-col justify-center">
                     <p class="text-lg text-white">{{ winners[1].alias}}</p>
                     <p class="text-sm text-white font-light">{{ winners[1].won}} juegos ganados </p>
+                    <p class="text-sm text-white font-light">{{ winners[1].points }} Puntos</p>
                     <p class="text-sm text-white font-light">{{ winners[1].points }} Puntos</p>
                   </b-col>
                 </b-row>
