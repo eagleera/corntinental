@@ -47,6 +47,14 @@ class Room {
             })
             .catch(error => console.log(error.response.data));
     }
+    getWinners(room_id){
+        return axios
+            .get(`/api/winners/${room_id}`)
+            .then(res => {
+                return res.data;
+            })
+            .catch(error => console.log(error.response.data));
+    }
     nextRound(data) {
         return axios
             .put(`/api/siguiente_ronda/${data.room}`, data)

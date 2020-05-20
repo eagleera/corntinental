@@ -24,4 +24,12 @@ class Room extends Model
     {
         return $this->hasMany(Point::class);
     }
+    public function scopeRecord($query, $room_id){
+        return $query->where('rooms.id', $room_id)
+            ->selectRaw('sum(points.points) as points, points.guest_id, points.round_id, guests.alias')
+            ->groupBy('points.guest_id', 'round_id', 'guests.alias')
+            ->orderBy('points', 'ASC')
+            ->join('points', 'rooms.id', '=', 'points.room_id')
+            ->join('guests', 'points.guest_id', '=', 'guests.id');
+    }
 }

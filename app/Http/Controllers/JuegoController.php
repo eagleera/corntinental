@@ -14,12 +14,13 @@ use App\Events\JoinEvent;
 
 class JuegoController extends Controller
 {
+
     public function createNuevo(Request $request)
     {
         $data= $request->validate([
             'alias' => 'sometimes',
             'room_name' => 'required|string',
-            'user_id' => 'sometimes|exists:users,id',
+            'user_id' => 'sometimes'
         ]);
         $room = new Room;
         $room->password = substr(str_shuffle("0123456789"), 0, 5);
@@ -32,11 +33,8 @@ class JuegoController extends Controller
         $room->guest_key = $guest->guest_id;
         return $room;
     }
+
     public function index(Request $request, $room_id){
-        $user = auth()->user();
-        if(!$user){
-            abort(404);
-        }
         $room = Room::with('guests', 'points', 'owner')->find($room_id);
         return $room;
     }
@@ -71,7 +69,7 @@ class JuegoController extends Controller
             'room_id' => 'required|exists:rooms,id',
             'password' => 'required|max:5',
             'alias' => 'sometimes',
-            'user_id' => 'sometimes|exists:users,id',
+            'user_id' => 'sometimes',
         ]);
         $room = Room::where(['id' => $data['room_id'], 'password' => $data['password']])->first();
         if(!$room){
@@ -114,6 +112,10 @@ class JuegoController extends Controller
     public function getRounds(){
         return Round::all();
     }
+    public function getWinners($room_id){
+        $room = Room::record($room_id)->get();
+        return $this->roundsWonPerPlayer($room, "guest_id");
+    }
 
     function createGuest($room_id, $alias, $user_id = null){
         $cookie_val = md5($_SERVER['REMOTE_ADDR'] . time());
@@ -121,10 +123,39 @@ class JuegoController extends Controller
         $guest->alias = $alias;
         $guest->room_id = $room_id;
         $guest->guest_id = $cookie_val;
-        if($user_id){
+        if($user_id != null){
             $guest->user_id = $user_id;
         }
         $guest->save();
         return $guest;
+    }
+
+    function roundsWonPerPlayer($room){
+        $guests = $this->groupBy($room, "guest_id");
+        foreach($guests as &$guest){
+            $won = 0;
+            $points = 0;
+            $alias = "";
+            foreach($guest as $round){
+                $points += $round->points;
+                if($round->points == 0){
+                    $won++;
+                }
+                $alias = $round->alias;
+            }
+            $guest = array();
+            $guest['won'] = $won;
+            $guest['alias'] = $alias;
+            $guest['points'] = $points;
+        }
+        return $guests;
+    }
+
+    function groupBy($array, $key) {
+        $return = array();
+        foreach($array as $val) {
+            $return[$val[$key]][] = $val;
+        }
+        return $return;
     }
 }

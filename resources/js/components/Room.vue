@@ -1,96 +1,120 @@
 <template>
-<div>
-  <navbar v-if="user != nulls" :user="user" />
-  <div class="pt-8">
-    <div class="card rounded-sm p-4 text-primary mx-4" v-if="room != null">
-      <div class="row">
-        <div class="col-12 col-md-8">
-          <p class="text-2xl font-bold">{{room.name}}, eres {{me}} {{ me.alias }}</p>
-        </div>
-        <div class="col-12 col-md-4">
-          <p class="text-xl">Contraseña:</p>
-          <div class="flex justify-between text-2xl">
-            <div
-              v-for="(letra, index) in pwdArray"
-              :key="index"
-              class="bg-light px-2 py-2 rounded-md font-bold text-danger"
-            >{{letra}}</div>
+  <div>
+    <div class="pt-8">
+      <div class="card rounded-sm p-4 text-primary mx-4" v-if="room != null">
+        <div class="row">
+          <div class="col-12 col-md-8">
+            <p class="text-2xl font-bold">{{room.name}}, eres {{ me.alias }}</p>
           </div>
-          {{ actual_round}}
+          <div class="col-12 col-md-4">
+            <p class="text-xl">Contraseña:</p>
+            <div class="flex justify-between text-2xl">
+              <div
+                v-for="(letra, index) in pwdArray"
+                :key="index"
+                class="bg-light px-2 py-2 rounded-md font-bold text-danger"
+              >{{letra}}</div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="row mt-4">
-        <div class="table-responsive">
-          <table class="table table-bordered">
-            <thead class="thead-dark">
-              <tr>
-                <th>Rondas / Jugadores</th>
-                <th v-for="guest in room.guests" :key="guest.id">{{ guest.alias}}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr :class="{'text-danger': actual_round == 1 }" v-for="n in 7" :key="n">
-                <td>#6</td>
-                <td v-for="(round, index) in round(n)" :key="index">{{ round.points }}</td>
-              </tr>
-              <!-- <tr>
-                <td>#7</td>
-                <td v-for="(round, index) in round(2)" :key="index">{{ round.points }}</td>
-              </tr>
-              <tr>
-                <td>#8</td>
-                <td v-for="(round, index) in round(3)" :key="index">{{ round.points }}</td>
-              </tr>
-              <tr>
-                <td>#9</td>
-                <td v-for="(round, index) in round(4)" :key="index">{{ round.points }}</td>
-              </tr>
-              <tr>
-                <td>#10</td>
-                <td v-for="(round, index) in round(5)" :key="index">{{ round.points }}</td>
-              </tr>
-              <tr>
-                <td>#11</td>
-                <td v-for="(round, index) in round(6)" :key="index">{{ round.points }}</td>
-              </tr>
-              <tr>
-                <td>#12</td>
-                <td v-for="(round, index) in round(7)" :key="index">{{ round.points }}</td>
-              </tr> -->
-            </tbody>
-            <tfoot>
-              <tr>
-                <td>Totales:</td>
-                <th v-for="guest in room.guests" :key="guest.id">{{ total(guest.id) }}</th>
-              </tr>
-            </tfoot>
-          </table>
+        <div v-if="actual_round == 8">
+          <p class="text-2xl">La partida ha terminado</p>
+          <b-row class="items-center">
+            <b-col v-if="winners.length >= 2">
+              <div class="rounded-lg bg-silver shadow border-0 flex items-center pl-4 p-3">
+                <b-row>
+                  <b-col md="2">
+                    <p class="text-4xl font-bold text-white mt-2">2</p>
+                  </b-col>
+                  <b-col class="flex flex-col justify-center">
+                    <p class="text-lg text-white">{{ winners[1].alias}}</p>
+                    <p class="text-sm text-white font-light">{{ winners[1].won}} juegos ganados </p>
+                    <p class="text-sm text-white font-light">{{ winners[1].points }} Puntos</p>
+                  </b-col>
+                </b-row>
+              </div>
+            </b-col>
+            <b-col>
+              <div class="rounded-lg bg-gold shadow border-0 flex items-center pl-4 p-4">
+                <b-row>
+                  <b-col md="2">
+                    <p class="text-5xl font-bold text-white mt-2">1</p>
+                  </b-col>
+                  <b-col class="flex flex-col justify-center">
+                    <p class="text-lg text-white">{{ winners[0].alias}}</p>
+                    <p class="text-sm text-white font-light">{{ winners[0].won}} juegos ganados </p>
+                    <p class="text-sm text-white font-light">{{ winners[0].points }} Puntos</p>
+                  </b-col>
+                </b-row>
+              </div>
+            </b-col>
+            <b-col v-if="winners.length >= 3">
+              <div class="rounded-lg bg-bronze shadow border-0 flex items-center pl-4">
+                <b-row>
+                  <b-col md="2">
+                    <p class="text-4xl font-bold text-white mt-2">3</p>
+                  </b-col>
+                  <b-col class="flex flex-col justify-center">
+                    <p class="text-lg text-white">{{ winners[2].alias}}</p>
+                    <p class="text-sm text-white font-light">{{ winners[2].won}} juegos ganados </p>
+                    <p class="text-sm text-white font-light">{{ winners[2].points }} Puntos</p>
+                  </b-col>
+                </b-row>
+              </div>
+            </b-col>
+          </b-row>
         </div>
+        <div class="row mt-4">
+          <p>T = Tercia, E = Escalera</p>
+          <div class="table-responsive" v-if="rounds.length > 0">
+            <table class="table table-bordered">
+              <thead class="thead-dark">
+                <tr>
+                  <th>Rondas / Jugadores</th>
+                  <th v-for="guest in room.guests" :key="guest.id">{{ guest.alias}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr :class="{'text-danger': actual_round == n }" v-for="n in 7" :key="n">
+                  <td>#{{ rounds.find(x => x.id == n).name }} ({{ rounds.find(x => x.id == n).description }})</td>
+                  <td
+                    v-for="(round, index) in round(n)"
+                    :key="index"
+                    :class="{'text-success': round.points === 0}"
+                  >{{ round.points }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>Totales:</td>
+                  <th v-for="guest in room.guests" :key="guest.id">{{ total(guest.id) }}</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div v-if="is_owner && actual_round < 8">
+          <b-button variant="success" v-b-modal.results-modal>Anotar resultados de ronda</b-button>
+        </div>
+        <b-modal id="results-modal" ref="modal" title="Resultados de la ronda" @ok="nextRound">
+          <form ref="nextroundform" @submit.stop.prevent="nextRound">
+            <b-form-group
+              v-for="guest in room.guests"
+              :key="guest.id"
+              :label="guest.alias"
+              label-for="name-input"
+              invalid-feedback="El nombre es obligatorio"
+            >
+              <b-form-input id="name-input" v-model="guest.points" required></b-form-input>
+            </b-form-group>
+          </form>
+        </b-modal>
       </div>
-      <div v-if="is_owner">
-        <b-button variant="success" v-b-modal.results-modal>Anotar resultados de ronda</b-button>
-      </div>
-      <b-modal id="results-modal" ref="modal" title="Resultados de la ronda" @ok="nextRound">
-        <form ref="nextroundform" @submit.stop.prevent="nextRound">
-          <b-form-group
-            v-for="guest in room.guests"
-            :key="guest.id"
-            :label="guest.alias"
-            label-for="name-input"
-            invalid-feedback="El nombre es obligatorio"
-          >
-            <b-form-input id="name-input" v-model="guest.points" required></b-form-input>
-          </b-form-group>
-        </form>
-      </b-modal>
     </div>
-  </div>
   </div>
 </template>
 
 <script>
-import navbar from "./Layout/Navbar";
-
 export default {
   name: "room",
   data() {
@@ -100,15 +124,26 @@ export default {
       is_owner: false,
       me: null,
       actual_round: 1,
-      rounds: null
+      rounds: [],
+      winners: []
     };
-  },
-  components:{
-    navbar
   },
   computed: {
     pwdArray() {
       return Array.from(this.room.password.toString());
+    }
+  },
+  watch: {
+    actual_round: function(val) {
+      if (val == 8) {
+        console.log("entro", val);
+        Room.getWinners(this.room.id).then(data => {
+          var keys = Object.keys(data);
+          keys.forEach(key => {
+              this.winners.push(data[key]);
+          });
+        });
+      }
     }
   },
   methods: {
@@ -137,7 +172,7 @@ export default {
         round = [];
         this.room.guests.forEach(guest => {
           round.push({
-            points: 0
+            points: id == this.actual_round ? "0" : ""
           });
         });
       }
@@ -172,7 +207,10 @@ export default {
         guest => guest.guest_id == localStorage.getItem("guest_id")
       )[0];
     });
-    Room.getRounds(data => this.rounds = data);
+    Room.getRounds().then(data => {
+      console.log(data);
+      this.rounds = data;
+    });
     Echo.channel("joinChannel").listen("JoinEvent", e => {
       if (this.$route.params.id == e.id) {
         Room.getData(this.$route.params.id).then(data => {

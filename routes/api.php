@@ -20,7 +20,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('/nuevo_juego', 'JuegoController@createNuevo');
 Route::put('/unirse_juego', 'JuegoController@joinRoom');
 Route::get('/rooms_available', 'JuegoController@indexAvailable');
-Route::get('/juego/{id}', 'JuegoController@index');
+Route::middleware('player')->get('/juego/{id}', 'JuegoController@index');
+Route::middleware('player')->get('/winners/{id}', 'JuegoController@getWinners');
 Route::get('/record', 'JuegoController@record');
 Route::get('/rounds', 'JuegoController@getRounds');
 Route::put('/siguiente_ronda/{room_id}', 'JuegoController@nextRound');

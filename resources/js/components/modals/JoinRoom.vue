@@ -11,7 +11,7 @@
       <b-form-group label="Tu nombre" label-for="name-input">
         <b-form-input id="name-input" v-model="form.alias" required :disabled="user != null" />
       </b-form-group>
-      <b-form-group label="Número de sala" label-for="sala_id">
+      <b-form-group label="Nombre de mesa" label-for="sala_id">
         <b-form-select v-model="form.room_id" :options="roomsAvailable" />
       </b-form-group>
       <b-form-group label="Contraseña" label-for="pwd">
