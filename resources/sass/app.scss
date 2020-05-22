@@ -1,1 +1,13 @@
-//
+// Fonts
+
+// Variables
+@import 'fonts';
+@import 'variables';
+
+// Bootstrap
+@import '~bootstrap/scss/bootstrap';
+@import '~bootstrap-vue/dist/bootstrap-vue.css';
+@import "~pattern.css/pattern.scss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -1,0 +1,234 @@
+<template>
+  <div>
+    <div class="py-8">
+      <div class="card rounded-sm p-4 text-primary mx-4" v-if="room != null && me != null">
+        <div class="row">
+          <div class="col-12 col-md-8">
+            <p class="text-2xl font-bold">{{room.name}}, eres {{ me.alias }}</p>
+          </div>
+          <div class="col-12 col-md-4">
+            <p class="text-xl">Contraseña:</p>
+            <div class="flex justify-between text-2xl">
+              <div
+                v-for="(letra, index) in pwdArray"
+                :key="index"
+                class="bg-light px-2 py-2 rounded-md font-bold text-danger"
+              >{{letra}}</div>
+            </div>
+          </div>
+        </div>
+        <div v-if="actual_round == 8 && winners.length > 0">
+          <p class="text-2xl text-danger mt-4 md:mt-0">
+            La partida ha terminado
+            <b-button variant="outline-primary" class="ml-4" href="/">Regresar a inicio</b-button>
+          </p>
+          <b-row class="items-center mt-6">
+            <b-col class="my-2 md:my-0" sm="12" md="4" v-if="winners.length >= 2">
+              <div class="rounded-lg bg-silver shadow border-0 flex items-center pl-4 p-3">
+                <b-row>
+                  <b-col md="2">
+                    <p class="text-4xl font-bold text-white mt-2">2</p>
+                  </b-col>
+                  <b-col class="flex flex-col justify-center">
+                    <p class="text-lg text-white">{{ winners[1].alias}}</p>
+                    <p class="text-sm text-white font-light">{{ winners[1].won}} juegos ganados</p>
+                    <p class="text-sm text-white font-light">{{ winners[1].points }} Puntos</p>
+                  </b-col>
+                </b-row>
+              </div>
+            </b-col>
+            <b-col class="my-2 md:my-0" sm="12" md="4">
+              <div class="rounded-lg bg-gold shadow border-0 flex items-center pl-4 p-4">
+                <b-row>
+                  <b-col md="2">
+                    <p class="text-5xl font-bold text-white mt-2">1</p>
+                  </b-col>
+                  <b-col class="flex flex-col justify-center">
+                    <p class="text-lg text-white">{{ winners[0].alias}}</p>
+                    <p class="text-sm text-white font-light">{{ winners[0].won}} juegos ganados</p>
+                    <p class="text-sm text-white font-light">{{ winners[0].points }} Puntos</p>
+                  </b-col>
+                </b-row>
+              </div>
+            </b-col>
+            <b-col class="my-2 md:my-0" sm="12" md="4">
+              <div class="rounded-lg bg-bronze shadow border-0 flex items-center pl-4">
+                <b-row>
+                  <b-col md="2">
+                    <p class="text-4xl font-bold text-white mt-2">3</p>
+                  </b-col>
+                  <b-col class="flex flex-col justify-center">
+                    <p class="text-lg text-white">{{ winners.length >= 3 ? winners[2].alias : ""}}</p>
+                    <p class="text-sm text-white font-light" v-if="winners.length >= 3">{{ winners[2].won}} juegos ganados</p>
+                    <p class="text-sm text-white font-light" v-else></p>
+                    <p class="text-sm text-white font-light" v-if="winners.length >= 3">{{ winners[2].points }} Puntos</p>
+                    <p class="text-sm text-white font-light" v-else></p>
+                  </b-col>
+                </b-row>
+              </div>
+            </b-col>
+          </b-row>
+        </div>
+        <div class="row mt-4">
+          <p>T = Tercia, E = Escalera</p>
+          <div class="table-responsive" v-if="rounds.length > 0">
+            <table class="table table-bordered">
+              <thead class="thead-dark">
+                <tr>
+                  <th>Rondas / Jugadores</th>
+                  <th v-for="guest in room.guests" :key="guest.id">{{ guest.alias}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr :class="{'text-danger': actual_round == n }" v-for="n in 7" :key="n">
+                  <td>#{{ rounds.find(x => x.id == n).name }} ({{ rounds.find(x => x.id == n).description }})</td>
+                  <td
+                    v-for="(round, index) in round(n)"
+                    :key="index"
+                    :class="{'text-success': round.points === 0}"
+                  >{{ round.points }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>Totales:</td>
+                  <th v-for="guest in room.guests" :key="guest.id">{{ total(guest.id) }}</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div v-if="is_owner && actual_round < 8">
+          <b-button variant="success" v-b-modal.results-modal>Anotar resultados de ronda</b-button>
+        </div>
+        <b-modal id="results-modal" ref="modal" title="Resultados de la ronda" @ok="nextRound">
+          <form ref="nextroundform" @submit.stop.prevent="nextRound">
+            <b-form-group
+              v-for="guest in room.guests"
+              :key="guest.id"
+              :label="guest.alias"
+              label-for="name-input"
+              invalid-feedback="El nombre es obligatorio"
+            >
+              <b-form-input id="name-input" v-model="guest.points" required></b-form-input>
+            </b-form-group>
+          </form>
+        </b-modal>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "room",
+  data() {
+    return {
+      prueba: 10,
+      room: null,
+      is_owner: false,
+      me: null,
+      actual_round: 1,
+      rounds: [],
+      winners: []
+    };
+  },
+  computed: {
+    pwdArray() {
+      return Array.from(this.room.password.toString());
+    }
+  },
+  watch: {
+    actual_round: function(val) {
+      if (val == 8) {
+        Room.getWinners(this.room.id).then(data => {
+          var keys = Object.keys(data);
+          keys.forEach(key => {
+            this.winners.push(data[key]);
+          });
+          this.winners.reverse();
+        });
+      }
+    }
+  },
+  methods: {
+    nextRound() {
+      let round = {
+        actual: this.actual_round,
+        points: [],
+        room: this.room.id
+      };
+      this.room.guests.forEach(guest => {
+        round.points.push({
+          guest_id: guest.id,
+          points: guest.points
+        });
+        delete guest.points;
+      });
+      Room.nextRound(round).then(data => {
+        this.room = data;
+      });
+    },
+    round(id) {
+      const grouped = this.groupBy(this.room.points, point => point.round_id);
+      this.actual_round = grouped.size + 1;
+      let round = grouped.get(id);
+      if (!round) {
+        round = [];
+        this.room.guests.forEach(guest => {
+          round.push({
+            points: id == this.actual_round ? "0" : ""
+          });
+        });
+      }
+      return round;
+    },
+    groupBy(list, keyGetter) {
+      const map = new Map();
+      list.forEach(item => {
+        const key = keyGetter(item);
+        const collection = map.get(key);
+        if (!collection) {
+          map.set(key, [item]);
+        } else {
+          collection.push(item);
+        }
+      });
+      return map;
+    },
+    total(guest_id) {
+      return this.room.points
+        .filter(point => point.guest_id == guest_id)
+        .reduce((prev, next) => prev + next.points, 0);
+    }
+  },
+  mounted() {
+    Room.getData(this.$route.params.id).then(data => {
+      this.room = data;
+      if (this.room.owner.guest_id == localStorage.getItem("guest_id")) {
+        this.is_owner = true;
+      }
+      if (!data.status) {
+        this.me = data.guests.filter(
+          guest => guest.id == this.$route.query.user
+        )[0];
+      } else {
+        this.me = data.guests.filter(
+          guest => guest.guest_id == localStorage.getItem("guest_id")
+        )[0];
+      }
+    });
+    Room.getRounds().then(data => {
+      this.rounds = data;
+    });
+    Echo.channel("joinChannel").listen("JoinEvent", e => {
+      if (this.$route.params.id == e.id) {
+        Room.getData(this.$route.params.id).then(data => {
+          this.room = data;
+          console.log(this.room);
+        });
+      }
+    });
+  }
+};
+</script>

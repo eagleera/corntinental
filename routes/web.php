@@ -13,22 +13,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-Route::get('/sueldo_semanal', function () {
-    return view('sueldo_semanal');
-});
-Route::post('/sueldo_semanal', ['as' => 'Practica11.sueldo_semanal', "uses" => "Practica11Controller@calcularSueldo"]);
-Route::get('/febrero14', function () {
-    return view('febrero14');
-});
-Route::post('/febrero14', ['as' => 'Practica11.febrero14', "uses" => "Practica11Controller@calcularRegalo"]);
-Route::get('/descuento', function () {
-    return view('descuento');
-});
-Route::post('/descuento', ['as' => 'Practica11.descuento', "uses" => "Practica11Controller@calcularDescuento"]);
-Route::get('/becas', function () {
-    return view('becas');
-});
-Route::post('/becas', ['as' => 'Practica11.becas', "uses" => "Practica11Controller@calcularBeca"]);
+// Route::post('/nuevo_juego', 'JuegoController@createNuevo')->name('nuevo_juego');
+// Route::get('/juego/{id}', 'JuegoController@index')->name('juego_index');
+// Route::get('/nuevo_juego', 'JuegoController@indexCreate')->name('nuevo_juego_index');
+// Route::get('/unirse_juego', 'JuegoController@indexJoin')->name('unir_juego_index');
+// Route::put('/unirse_juego', 'JuegoController@joinRoom')->name('join_room');
+
+Route::view('/', 'app');
+Route::view('/{any}', 'app');
+Route::view('/{any}/{other}', 'app');

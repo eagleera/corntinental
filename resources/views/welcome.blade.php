@@ -1,42 +1,62 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Menu</title>
-    </head>
-    <body>
-        <div class="flex-center position-ref full-height">
-            @if (Route::has('login'))
-                <div class="top-right links">
-                    @auth
-                        <a href="{{ url('/home') }}">Home</a>
-                    @else
-                        <a href="{{ route('login') }}">Login</a>
+@extends('layouts.app')
 
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}">Register</a>
-                        @endif
-                    @endauth
-                </div>
-            @endif
-
-            <div class="content">
-                <div class="title m-b-md">
-                    Laravel
-                </div>
-
-                <div class="links">
-                    <a href="https://laravel.com/docs">Docs</a>
-                    <a href="https://laracasts.com">Laracasts</a>
-                    <a href="https://laravel-news.com">News</a>
-                    <a href="https://blog.laravel.com">Blog</a>
-                    <a href="https://nova.laravel.com">Nova</a>
-                    <a href="https://forge.laravel.com">Forge</a>
-                    <a href="https://vapor.laravel.com">Vapor</a>
-                    <a href="https://github.com/laravel/laravel">GitHub</a>
+@section('content')
+<div class="container">
+    <div class="h-full card rounded-md p-6 has-background-light">
+        <div class="columns h-full">
+            <div class="column is-6 h-full">
+                <div class="columns is-multiline h-full is-mobile">
+                    <div class="column is-12 text-center py-16 px-32">
+                        <a class="button is-danger is-fullwidth h-full text-3xl font-bold" href="{{route('nuevo_juego_index')}}">
+                            Crear un nuevo juego
+                        </a>
+                    </div>
+                    <div class="column is-12 text-center py-16 px-32">
+                        <a class="button is-primary is-fullwidth h-full text-3xl font-bold" href="{{route('unir_juego_index')}}">
+                            Unirse a una partida
+                        </a>
+                    </div>
                 </div>
             </div>
+            <div class="column is-6 h-full p-16">
+                @guest
+                    <div class="border-4 border-gray-600 h-full rounded-md p-8">
+                        <div>
+                            <p class="font-bold text-4xl">Hola!</p>
+                            <p class="text-3xl">Para empezar a llevar la cuenta de tus juegos y puntuaciones inicia sesión o crea una cuenta!</p>
+                        </div>
+                        <div class="columns mt-16 is-multiline">
+                            <div class="column is-12">
+                                <a class="button is-primary is-fullwidth h-full text-xl font-bold" href="{{route('login')}}">
+                                    Iniciar sesión
+                                </a>
+                            </div>
+                            <div class="column is-12">
+                                <a class="button is-danger is-fullwidth h-full text-xl font-bold" href="{{route('register')}}">
+                                    Crear una cuenta
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="border-4 border-gray-600 h-full rounded-md p-8 relative">
+                        <p class="text-xl font-bold">{{ Auth::user()->name }}, Aqui tienes tu historial de partidas</p>
+                        @auth
+                            <a
+                                class="has-text-link absolute bottom-0 right-0 p-2"
+                                href="{{ url("logout") }}"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                            >
+                                Cerrar sesión
+                            </a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                @csrf
+                            </form>
+                        @endauth
+                    </div>
+                @endguest
+            </div>
         </div>
-    </body>
-</html>
+    </div>
+</div>
+@endsection
