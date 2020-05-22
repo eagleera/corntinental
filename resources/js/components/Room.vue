@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="pt-8">
-      <div class="card rounded-sm p-4 text-primary mx-4" v-if="room != null">
+    <div class="py-8">
+      <div class="card rounded-sm p-4 text-primary mx-4" v-if="room != null && me != null">
         <div class="row">
           <div class="col-12 col-md-8">
             <p class="text-2xl font-bold">{{room.name}}, eres {{ me.alias }}</p>
@@ -17,12 +17,13 @@
             </div>
           </div>
         </div>
-        <div v-if="actual_round == 8">
-          <p class="text-2xl text-danger">La partida ha terminado
+        <div v-if="actual_round == 8 && winners.length > 0">
+          <p class="text-2xl text-danger mt-4 md:mt-0">
+            La partida ha terminado
             <b-button variant="outline-primary" class="ml-4" href="/">Regresar a inicio</b-button>
           </p>
-          <b-row class="items-center">
-            <b-col v-if="winners.length >= 2">
+          <b-row class="items-center mt-6">
+            <b-col class="my-2 md:my-0" sm="12" md="4" v-if="winners.length >= 2">
               <div class="rounded-lg bg-silver shadow border-0 flex items-center pl-4 p-3">
                 <b-row>
                   <b-col md="2">
@@ -30,14 +31,13 @@
                   </b-col>
                   <b-col class="flex flex-col justify-center">
                     <p class="text-lg text-white">{{ winners[1].alias}}</p>
-                    <p class="text-sm text-white font-light">{{ winners[1].won}} juegos ganados </p>
-                    <p class="text-sm text-white font-light">{{ winners[1].points }} Puntos</p>
+                    <p class="text-sm text-white font-light">{{ winners[1].won}} juegos ganados</p>
                     <p class="text-sm text-white font-light">{{ winners[1].points }} Puntos</p>
                   </b-col>
                 </b-row>
               </div>
             </b-col>
-            <b-col>
+            <b-col class="my-2 md:my-0" sm="12" md="4">
               <div class="rounded-lg bg-gold shadow border-0 flex items-center pl-4 p-4">
                 <b-row>
                   <b-col md="2">
@@ -45,22 +45,24 @@
                   </b-col>
                   <b-col class="flex flex-col justify-center">
                     <p class="text-lg text-white">{{ winners[0].alias}}</p>
-                    <p class="text-sm text-white font-light">{{ winners[0].won}} juegos ganados </p>
+                    <p class="text-sm text-white font-light">{{ winners[0].won}} juegos ganados</p>
                     <p class="text-sm text-white font-light">{{ winners[0].points }} Puntos</p>
                   </b-col>
                 </b-row>
               </div>
             </b-col>
-            <b-col v-if="winners.length >= 3">
+            <b-col class="my-2 md:my-0" sm="12" md="4">
               <div class="rounded-lg bg-bronze shadow border-0 flex items-center pl-4">
                 <b-row>
                   <b-col md="2">
                     <p class="text-4xl font-bold text-white mt-2">3</p>
                   </b-col>
                   <b-col class="flex flex-col justify-center">
-                    <p class="text-lg text-white">{{ winners[2].alias}}</p>
-                    <p class="text-sm text-white font-light">{{ winners[2].won}} juegos ganados </p>
-                    <p class="text-sm text-white font-light">{{ winners[2].points }} Puntos</p>
+                    <p class="text-lg text-white">{{ winners.length >= 3 ? winners[2].alias : ""}}</p>
+                    <p class="text-sm text-white font-light" v-if="winners.length >= 3">{{ winners[2].won}} juegos ganados</p>
+                    <p class="text-sm text-white font-light" v-else></p>
+                    <p class="text-sm text-white font-light" v-if="winners.length >= 3">{{ winners[2].points }} Puntos</p>
+                    <p class="text-sm text-white font-light" v-else></p>
                   </b-col>
                 </b-row>
               </div>
@@ -139,12 +141,12 @@ export default {
   watch: {
     actual_round: function(val) {
       if (val == 8) {
-        console.log("entro", val);
         Room.getWinners(this.room.id).then(data => {
           var keys = Object.keys(data);
           keys.forEach(key => {
-              this.winners.push(data[key]);
+            this.winners.push(data[key]);
           });
+          this.winners.reverse();
         });
       }
     }
@@ -206,12 +208,17 @@ export default {
       if (this.room.owner.guest_id == localStorage.getItem("guest_id")) {
         this.is_owner = true;
       }
-      this.me = data.guests.filter(
-        guest => guest.guest_id == localStorage.getItem("guest_id")
-      )[0];
+      if (!data.status) {
+        this.me = data.guests.filter(
+          guest => guest.id == this.$route.query.user
+        )[0];
+      } else {
+        this.me = data.guests.filter(
+          guest => guest.guest_id == localStorage.getItem("guest_id")
+        )[0];
+      }
     });
     Room.getRounds().then(data => {
-      console.log(data);
       this.rounds = data;
     });
     Echo.channel("joinChannel").listen("JoinEvent", e => {

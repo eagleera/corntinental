@@ -16,6 +16,7 @@ const routes = [
     },
     {
         path: '/juego/:id',
+        name: 'Game',
         component: Room
     },
     {
@@ -32,6 +33,7 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
     if ( User.loggedIn() && to.name === 'Home') next({ name: 'AuthHome' })
     if (!User.loggedIn() && to.name === 'AuthHome') next({ name: 'Home' })
+    if (!User.loggedIn() && !localStorage.getItem('guest_id') && to.name === 'Game') next({ name: 'Home' })
     else next()
 })
 

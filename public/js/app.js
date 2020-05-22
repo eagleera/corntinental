@@ -2096,7 +2096,8 @@ __webpack_require__.r(__webpack_exports__);
             mesa_id: x.room.id,
             puntos: x.points,
             rondas: x.won,
-            lugar: x.place
+            lugar: x.place,
+            guest_id: x.guest_id
           };
         });
       }
@@ -2125,6 +2126,8 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modals_JoinRoom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modals/JoinRoom */ "./resources/js/components/modals/JoinRoom.vue");
 /* harmony import */ var _modals_CreateRoom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modals/CreateRoom */ "./resources/js/components/modals/CreateRoom.vue");
+//
+//
 //
 //
 //
@@ -2468,6 +2471,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "room",
   data: function data() {
@@ -2491,12 +2496,13 @@ __webpack_require__.r(__webpack_exports__);
       var _this = this;
 
       if (val == 8) {
-        console.log("entro", val);
         Room.getWinners(this.room.id).then(function (data) {
           var keys = Object.keys(data);
           keys.forEach(function (key) {
             _this.winners.push(data[key]);
           });
+
+          _this.winners.reverse();
         });
       }
     }
@@ -2573,12 +2579,17 @@ __webpack_require__.r(__webpack_exports__);
         _this4.is_owner = true;
       }
 
-      _this4.me = data.guests.filter(function (guest) {
-        return guest.guest_id == localStorage.getItem("guest_id");
-      })[0];
+      if (!data.status) {
+        _this4.me = data.guests.filter(function (guest) {
+          return guest.id == _this4.$route.query.user;
+        })[0];
+      } else {
+        _this4.me = data.guests.filter(function (guest) {
+          return guest.guest_id == localStorage.getItem("guest_id");
+        })[0];
+      }
     });
     Room.getRounds().then(function (data) {
-      console.log(data);
       _this4.rounds = data;
     });
     Echo.channel("joinChannel").listen("JoinEvent", function (e) {
@@ -85913,6 +85924,7 @@ var render = function() {
                   ])
                 : _c(
                     "div",
+                    { staticClass: "table-responsive" },
                     [
                       _c("b-table", {
                         attrs: {
@@ -85932,7 +85944,11 @@ var render = function() {
                                     {
                                       attrs: {
                                         size: "sm",
-                                        href: "/juego/" + row.item.mesa_id
+                                        href:
+                                          "/juego/" +
+                                          row.item.mesa_id +
+                                          "?user=" +
+                                          row.item.guest_id
                                       }
                                     },
                                     [_vm._v("Ver detalles")]
@@ -85943,7 +85959,7 @@ var render = function() {
                           ],
                           null,
                           false,
-                          4141031807
+                          238641393
                         )
                       })
                     ],
@@ -85984,426 +86000,461 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c(
-    "b-container",
-    { staticClass: "h-full card rounded-md md:p-6 has-background-light pt-4" },
+    "div",
+    { staticClass: "min-h-screen flex items-center" },
     [
       _c(
-        "b-row",
+        "b-container",
+        {
+          staticClass: "h-full card rounded-md md:p-6 has-background-light pt-4"
+        },
         [
           _c(
-            "b-col",
-            { attrs: { md: "6" } },
+            "b-row",
             [
               _c(
-                "b-row",
-                { staticClass: "h-full" },
+                "b-col",
+                { attrs: { md: "6" } },
                 [
                   _c(
-                    "b-col",
-                    { staticClass: "flex items-center", attrs: { cols: "12" } },
+                    "b-row",
+                    { staticClass: "h-full" },
                     [
                       _c(
-                        "b-button",
+                        "b-col",
                         {
-                          directives: [
-                            {
-                              name: "b-modal",
-                              rawName: "v-b-modal.create-room-modal",
-                              modifiers: { "create-room-modal": true }
-                            }
-                          ],
-                          staticClass:
-                            "btn-block text-3xl font-bold flex items-center justify-center md:h-48",
-                          attrs: { variant: "outline-primary" }
+                          staticClass: "flex items-center",
+                          attrs: { cols: "12" }
                         },
-                        [_vm._v("Crear nueva mesa")]
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-col",
-                    { staticClass: "flex items-center" },
-                    [
+                        [
+                          _c(
+                            "b-button",
+                            {
+                              directives: [
+                                {
+                                  name: "b-modal",
+                                  rawName: "v-b-modal.create-room-modal",
+                                  modifiers: { "create-room-modal": true }
+                                }
+                              ],
+                              staticClass:
+                                "btn-block text-3xl font-bold flex items-center justify-center md:h-48",
+                              attrs: { variant: "outline-primary" }
+                            },
+                            [_vm._v("Crear nueva mesa")]
+                          )
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
                       _c(
-                        "b-button",
-                        {
-                          directives: [
+                        "b-col",
+                        { staticClass: "flex items-center" },
+                        [
+                          _c(
+                            "b-button",
                             {
-                              name: "b-modal",
-                              rawName: "v-b-modal.join-room-modal",
-                              modifiers: { "join-room-modal": true }
-                            }
-                          ],
-                          staticClass:
-                            "btn-block text-3xl font-bold flex items-center justify-center mt-4 md:h-48",
-                          attrs: { variant: "outline-secondary" }
-                        },
-                        [_vm._v("Unirse a una mesa")]
+                              directives: [
+                                {
+                                  name: "b-modal",
+                                  rawName: "v-b-modal.join-room-modal",
+                                  modifiers: { "join-room-modal": true }
+                                }
+                              ],
+                              staticClass:
+                                "btn-block text-3xl font-bold flex items-center justify-center mt-4 md:h-48",
+                              attrs: { variant: "outline-secondary" }
+                            },
+                            [_vm._v("Unirse a una mesa")]
+                          )
+                        ],
+                        1
                       )
                     ],
                     1
                   )
                 ],
                 1
-              )
+              ),
+              _vm._v(" "),
+              _c("div", { staticClass: "col-12 col-md-6 p-8" }, [
+                _c(
+                  "div",
+                  {
+                    staticClass:
+                      "border-4 border-gray-600 h-full rounded-md px-8 py-4 text-black"
+                  },
+                  [
+                    !_vm.login && !_vm.signup
+                      ? _c("div", [
+                          _c("div", [
+                            _c("p", { staticClass: "font-bold text-4xl" }, [
+                              _vm._v("Hola!")
+                            ]),
+                            _vm._v(" "),
+                            _c("p", { staticClass: "text-2xl text-black" }, [
+                              _vm._v(
+                                "Para empezar a llevar la cuenta de tus juegos y puntuaciones inicia sesión o crea una cuenta!"
+                              )
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _c(
+                            "div",
+                            { staticClass: "columns mt-16 is-multiline" },
+                            [
+                              _c("div", { staticClass: "column is-12" }, [
+                                _c(
+                                  "a",
+                                  {
+                                    staticClass:
+                                      "btn btn-primary btn-block text-xl font-bold text-white",
+                                    on: {
+                                      click: function() {
+                                        return (_vm.login = !_vm.login)
+                                      }
+                                    }
+                                  },
+                                  [_vm._v("Iniciar sesión")]
+                                )
+                              ]),
+                              _vm._v(" "),
+                              _c("div", { staticClass: "column is-12 mt-3" }, [
+                                _c(
+                                  "a",
+                                  {
+                                    staticClass:
+                                      "btn btn-secondary btn-block h-full text-xl font-bold text-white",
+                                    on: {
+                                      click: function() {
+                                        return (_vm.signup = !_vm.signup)
+                                      }
+                                    }
+                                  },
+                                  [_vm._v("Crear una cuenta")]
+                                )
+                              ])
+                            ]
+                          )
+                        ])
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.login
+                      ? _c(
+                          "div",
+                          [
+                            _c("p", { staticClass: "text-2xl font-bold" }, [
+                              _vm._v("Inicia sesión")
+                            ]),
+                            _vm._v(" "),
+                            _c(
+                              "b-form",
+                              {
+                                on: {
+                                  submit: function($event) {
+                                    $event.stopPropagation()
+                                    $event.preventDefault()
+                                    return _vm.doLogin($event)
+                                  }
+                                }
+                              },
+                              [
+                                _c(
+                                  "b-form-group",
+                                  {
+                                    attrs: {
+                                      label: "Correo electronico:",
+                                      "label-for": "login_email",
+                                      description:
+                                        "No compartiremos tu correo electronico con nadie más."
+                                    }
+                                  },
+                                  [
+                                    _c("b-form-input", {
+                                      attrs: {
+                                        id: "login_email",
+                                        type: "email",
+                                        required: "",
+                                        placeholder: "Introduce tu correo..."
+                                      },
+                                      model: {
+                                        value: _vm.loginform.email,
+                                        callback: function($$v) {
+                                          _vm.$set(_vm.loginform, "email", $$v)
+                                        },
+                                        expression: "loginform.email"
+                                      }
+                                    })
+                                  ],
+                                  1
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "b-form-group",
+                                  {
+                                    attrs: {
+                                      label: "Contraseña:",
+                                      "label-for": "login_pwd"
+                                    }
+                                  },
+                                  [
+                                    _c("b-form-input", {
+                                      attrs: {
+                                        id: "login_pwd",
+                                        type: "password",
+                                        required: "",
+                                        placeholder:
+                                          "Introduce tu contraseña..."
+                                      },
+                                      model: {
+                                        value: _vm.loginform.password,
+                                        callback: function($$v) {
+                                          _vm.$set(
+                                            _vm.loginform,
+                                            "password",
+                                            $$v
+                                          )
+                                        },
+                                        expression: "loginform.password"
+                                      }
+                                    })
+                                  ],
+                                  1
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "b-button",
+                                  {
+                                    attrs: {
+                                      type: "submit",
+                                      variant: "primary",
+                                      block: ""
+                                    }
+                                  },
+                                  [_vm._v("Iniciar sesión")]
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "p",
+                                  {
+                                    staticClass:
+                                      "text-blue cursor-pointer text-center mt-3",
+                                    on: {
+                                      click: function() {
+                                        _vm.login = false
+                                        _vm.signup = true
+                                      }
+                                    }
+                                  },
+                                  [
+                                    _vm._v(
+                                      "¿No tienes una cuenta? Crea una ahora"
+                                    )
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          ],
+                          1
+                        )
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.signup
+                      ? _c(
+                          "div",
+                          [
+                            _c("p", { staticClass: "text-2xl font-bold" }, [
+                              _vm._v("Crea una cuenta")
+                            ]),
+                            _vm._v(" "),
+                            _c(
+                              "b-form",
+                              {
+                                on: {
+                                  submit: function($event) {
+                                    $event.stopPropagation()
+                                    $event.preventDefault()
+                                    return _vm.doSignup($event)
+                                  }
+                                }
+                              },
+                              [
+                                _c(
+                                  "b-form-group",
+                                  {
+                                    attrs: {
+                                      label: "Correo electronico:",
+                                      "label-for": "signup_email",
+                                      description:
+                                        "No compartiremos tu correo electronico con nadie más."
+                                    }
+                                  },
+                                  [
+                                    _c("b-form-input", {
+                                      attrs: {
+                                        id: "signup_email",
+                                        type: "email",
+                                        required: "",
+                                        placeholder: "Introduce tu correo..."
+                                      },
+                                      model: {
+                                        value: _vm.signupform.email,
+                                        callback: function($$v) {
+                                          _vm.$set(_vm.signupform, "email", $$v)
+                                        },
+                                        expression: "signupform.email"
+                                      }
+                                    })
+                                  ],
+                                  1
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "b-form-group",
+                                  {
+                                    attrs: {
+                                      label: "Nombre:",
+                                      "label-for": "signup_name"
+                                    }
+                                  },
+                                  [
+                                    _c("b-form-input", {
+                                      attrs: {
+                                        id: "signup_name",
+                                        type: "text",
+                                        required: "",
+                                        placeholder: "Introduce tu nombre..."
+                                      },
+                                      model: {
+                                        value: _vm.signupform.name,
+                                        callback: function($$v) {
+                                          _vm.$set(_vm.signupform, "name", $$v)
+                                        },
+                                        expression: "signupform.name"
+                                      }
+                                    })
+                                  ],
+                                  1
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "b-form-group",
+                                  {
+                                    attrs: {
+                                      label: "Contraseña:",
+                                      "label-for": "signup_pwd"
+                                    }
+                                  },
+                                  [
+                                    _c("b-form-input", {
+                                      attrs: {
+                                        id: "signup_pwd",
+                                        type: "password",
+                                        required: "",
+                                        placeholder:
+                                          "Introduce tu contraseña..."
+                                      },
+                                      model: {
+                                        value: _vm.signupform.password,
+                                        callback: function($$v) {
+                                          _vm.$set(
+                                            _vm.signupform,
+                                            "password",
+                                            $$v
+                                          )
+                                        },
+                                        expression: "signupform.password"
+                                      }
+                                    })
+                                  ],
+                                  1
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "b-form-group",
+                                  {
+                                    attrs: {
+                                      label: "Confirmar contraseña:",
+                                      "label-for": "signup_pwd_confirm"
+                                    }
+                                  },
+                                  [
+                                    _c("b-form-input", {
+                                      attrs: {
+                                        id: "signup_pwd_confirm",
+                                        type: "password",
+                                        required: "",
+                                        placeholder: "Confirma tu contraseña..."
+                                      },
+                                      model: {
+                                        value:
+                                          _vm.signupform.password_confirmation,
+                                        callback: function($$v) {
+                                          _vm.$set(
+                                            _vm.signupform,
+                                            "password_confirmation",
+                                            $$v
+                                          )
+                                        },
+                                        expression:
+                                          "signupform.password_confirmation"
+                                      }
+                                    })
+                                  ],
+                                  1
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "b-button",
+                                  {
+                                    attrs: {
+                                      type: "submit",
+                                      variant: "primary",
+                                      block: ""
+                                    }
+                                  },
+                                  [_vm._v("Crear cuenta")]
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "p",
+                                  {
+                                    staticClass:
+                                      "text-blue cursor-pointer text-center mt-3",
+                                    on: {
+                                      click: function() {
+                                        _vm.login = true
+                                        _vm.signup = false
+                                      }
+                                    }
+                                  },
+                                  [
+                                    _vm._v(
+                                      "¿Ya tienes una cuenta? Inicia sesión"
+                                    )
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          ],
+                          1
+                        )
+                      : _vm._e()
+                  ]
+                )
+              ])
             ],
             1
           ),
           _vm._v(" "),
-          _c("div", { staticClass: "col-12 col-md-6 p-8" }, [
-            _c(
-              "div",
-              {
-                staticClass:
-                  "border-4 border-gray-600 h-full rounded-md px-8 py-4 text-black"
-              },
-              [
-                !_vm.login && !_vm.signup
-                  ? _c("div", [
-                      _c("div", [
-                        _c("p", { staticClass: "font-bold text-4xl" }, [
-                          _vm._v("Hola!")
-                        ]),
-                        _vm._v(" "),
-                        _c("p", { staticClass: "text-2xl text-black" }, [
-                          _vm._v(
-                            "Para empezar a llevar la cuenta de tus juegos y puntuaciones inicia sesión o crea una cuenta!"
-                          )
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _c("div", { staticClass: "columns mt-16 is-multiline" }, [
-                        _c("div", { staticClass: "column is-12" }, [
-                          _c(
-                            "a",
-                            {
-                              staticClass:
-                                "btn btn-primary btn-block text-xl font-bold text-white",
-                              on: {
-                                click: function() {
-                                  return (_vm.login = !_vm.login)
-                                }
-                              }
-                            },
-                            [_vm._v("Iniciar sesión")]
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "column is-12 mt-3" }, [
-                          _c(
-                            "a",
-                            {
-                              staticClass:
-                                "btn btn-secondary btn-block h-full text-xl font-bold text-white",
-                              on: {
-                                click: function() {
-                                  return (_vm.signup = !_vm.signup)
-                                }
-                              }
-                            },
-                            [_vm._v("Crear una cuenta")]
-                          )
-                        ])
-                      ])
-                    ])
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.login
-                  ? _c(
-                      "div",
-                      [
-                        _c("p", { staticClass: "text-2xl font-bold" }, [
-                          _vm._v("Inicia sesión")
-                        ]),
-                        _vm._v(" "),
-                        _c(
-                          "b-form",
-                          {
-                            on: {
-                              submit: function($event) {
-                                $event.stopPropagation()
-                                $event.preventDefault()
-                                return _vm.doLogin($event)
-                              }
-                            }
-                          },
-                          [
-                            _c(
-                              "b-form-group",
-                              {
-                                attrs: {
-                                  label: "Correo electronico:",
-                                  "label-for": "login_email",
-                                  description:
-                                    "No compartiremos tu correo electronico con nadie más."
-                                }
-                              },
-                              [
-                                _c("b-form-input", {
-                                  attrs: {
-                                    id: "login_email",
-                                    type: "email",
-                                    required: "",
-                                    placeholder: "Introduce tu correo..."
-                                  },
-                                  model: {
-                                    value: _vm.loginform.email,
-                                    callback: function($$v) {
-                                      _vm.$set(_vm.loginform, "email", $$v)
-                                    },
-                                    expression: "loginform.email"
-                                  }
-                                })
-                              ],
-                              1
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "b-form-group",
-                              {
-                                attrs: {
-                                  label: "Contraseña:",
-                                  "label-for": "login_pwd"
-                                }
-                              },
-                              [
-                                _c("b-form-input", {
-                                  attrs: {
-                                    id: "login_pwd",
-                                    type: "password",
-                                    required: "",
-                                    placeholder: "Introduce tu contraseña..."
-                                  },
-                                  model: {
-                                    value: _vm.loginform.password,
-                                    callback: function($$v) {
-                                      _vm.$set(_vm.loginform, "password", $$v)
-                                    },
-                                    expression: "loginform.password"
-                                  }
-                                })
-                              ],
-                              1
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "b-button",
-                              {
-                                attrs: {
-                                  type: "submit",
-                                  variant: "primary",
-                                  block: ""
-                                }
-                              },
-                              [_vm._v("Iniciar sesión")]
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "p",
-                              {
-                                staticClass:
-                                  "text-blue cursor-pointer text-center mt-3",
-                                on: {
-                                  click: function() {
-                                    _vm.login = false
-                                    _vm.signup = true
-                                  }
-                                }
-                              },
-                              [_vm._v("¿No tienes una cuenta? Crea una ahora")]
-                            )
-                          ],
-                          1
-                        )
-                      ],
-                      1
-                    )
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.signup
-                  ? _c(
-                      "div",
-                      [
-                        _c("p", { staticClass: "text-2xl font-bold" }, [
-                          _vm._v("Crea una cuenta")
-                        ]),
-                        _vm._v(" "),
-                        _c(
-                          "b-form",
-                          {
-                            on: {
-                              submit: function($event) {
-                                $event.stopPropagation()
-                                $event.preventDefault()
-                                return _vm.doSignup($event)
-                              }
-                            }
-                          },
-                          [
-                            _c(
-                              "b-form-group",
-                              {
-                                attrs: {
-                                  label: "Correo electronico:",
-                                  "label-for": "signup_email",
-                                  description:
-                                    "No compartiremos tu correo electronico con nadie más."
-                                }
-                              },
-                              [
-                                _c("b-form-input", {
-                                  attrs: {
-                                    id: "signup_email",
-                                    type: "email",
-                                    required: "",
-                                    placeholder: "Introduce tu correo..."
-                                  },
-                                  model: {
-                                    value: _vm.signupform.email,
-                                    callback: function($$v) {
-                                      _vm.$set(_vm.signupform, "email", $$v)
-                                    },
-                                    expression: "signupform.email"
-                                  }
-                                })
-                              ],
-                              1
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "b-form-group",
-                              {
-                                attrs: {
-                                  label: "Nombre:",
-                                  "label-for": "signup_name"
-                                }
-                              },
-                              [
-                                _c("b-form-input", {
-                                  attrs: {
-                                    id: "signup_name",
-                                    type: "text",
-                                    required: "",
-                                    placeholder: "Introduce tu nombre..."
-                                  },
-                                  model: {
-                                    value: _vm.signupform.name,
-                                    callback: function($$v) {
-                                      _vm.$set(_vm.signupform, "name", $$v)
-                                    },
-                                    expression: "signupform.name"
-                                  }
-                                })
-                              ],
-                              1
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "b-form-group",
-                              {
-                                attrs: {
-                                  label: "Contraseña:",
-                                  "label-for": "signup_pwd"
-                                }
-                              },
-                              [
-                                _c("b-form-input", {
-                                  attrs: {
-                                    id: "signup_pwd",
-                                    type: "password",
-                                    required: "",
-                                    placeholder: "Introduce tu contraseña..."
-                                  },
-                                  model: {
-                                    value: _vm.signupform.password,
-                                    callback: function($$v) {
-                                      _vm.$set(_vm.signupform, "password", $$v)
-                                    },
-                                    expression: "signupform.password"
-                                  }
-                                })
-                              ],
-                              1
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "b-form-group",
-                              {
-                                attrs: {
-                                  label: "Confirmar contraseña:",
-                                  "label-for": "signup_pwd_confirm"
-                                }
-                              },
-                              [
-                                _c("b-form-input", {
-                                  attrs: {
-                                    id: "signup_pwd_confirm",
-                                    type: "password",
-                                    required: "",
-                                    placeholder: "Confirma tu contraseña..."
-                                  },
-                                  model: {
-                                    value: _vm.signupform.password_confirmation,
-                                    callback: function($$v) {
-                                      _vm.$set(
-                                        _vm.signupform,
-                                        "password_confirmation",
-                                        $$v
-                                      )
-                                    },
-                                    expression:
-                                      "signupform.password_confirmation"
-                                  }
-                                })
-                              ],
-                              1
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "b-button",
-                              {
-                                attrs: {
-                                  type: "submit",
-                                  variant: "primary",
-                                  block: ""
-                                }
-                              },
-                              [_vm._v("Crear cuenta")]
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "p",
-                              {
-                                staticClass:
-                                  "text-blue cursor-pointer text-center mt-3",
-                                on: {
-                                  click: function() {
-                                    _vm.login = true
-                                    _vm.signup = false
-                                  }
-                                }
-                              },
-                              [_vm._v("¿Ya tienes una cuenta? Inicia sesión")]
-                            )
-                          ],
-                          1
-                        )
-                      ],
-                      1
-                    )
-                  : _vm._e()
-              ]
-            )
-          ])
+          _c("join-room"),
+          _vm._v(" "),
+          _c("create-room")
         ],
         1
-      ),
-      _vm._v(" "),
-      _c("join-room"),
-      _vm._v(" "),
-      _c("create-room")
+      )
     ],
     1
   )
@@ -86518,8 +86569,8 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("div", { staticClass: "pt-8" }, [
-      _vm.room != null
+    _c("div", { staticClass: "py-8" }, [
+      _vm.room != null && _vm.me != null
         ? _c(
             "div",
             { staticClass: "card rounded-sm p-4 text-primary mx-4" },
@@ -86555,15 +86606,17 @@ var render = function() {
                 ])
               ]),
               _vm._v(" "),
-              _vm.actual_round == 8
+              _vm.actual_round == 8 && _vm.winners.length > 0
                 ? _c(
                     "div",
                     [
                       _c(
                         "p",
-                        { staticClass: "text-2xl text-danger" },
+                        { staticClass: "text-2xl text-danger mt-4 md:mt-0" },
                         [
-                          _vm._v("La partida ha terminado\n          "),
+                          _vm._v(
+                            "\n          La partida ha terminado\n          "
+                          ),
                           _c(
                             "b-button",
                             {
@@ -86578,258 +86631,281 @@ var render = function() {
                       _vm._v(" "),
                       _c(
                         "b-row",
-                        { staticClass: "items-center" },
+                        { staticClass: "items-center mt-6" },
                         [
                           _vm.winners.length >= 2
-                            ? _c("b-col", [
-                                _c(
-                                  "div",
-                                  {
-                                    staticClass:
-                                      "rounded-lg bg-silver shadow border-0 flex items-center pl-4 p-3"
-                                  },
-                                  [
-                                    _c(
-                                      "b-row",
-                                      [
-                                        _c("b-col", { attrs: { md: "2" } }, [
+                            ? _c(
+                                "b-col",
+                                {
+                                  staticClass: "my-2 md:my-0",
+                                  attrs: { sm: "12", md: "4" }
+                                },
+                                [
+                                  _c(
+                                    "div",
+                                    {
+                                      staticClass:
+                                        "rounded-lg bg-silver shadow border-0 flex items-center pl-4 p-3"
+                                    },
+                                    [
+                                      _c(
+                                        "b-row",
+                                        [
+                                          _c("b-col", { attrs: { md: "2" } }, [
+                                            _c(
+                                              "p",
+                                              {
+                                                staticClass:
+                                                  "text-4xl font-bold text-white mt-2"
+                                              },
+                                              [_vm._v("2")]
+                                            )
+                                          ]),
+                                          _vm._v(" "),
                                           _c(
-                                            "p",
+                                            "b-col",
                                             {
                                               staticClass:
-                                                "text-4xl font-bold text-white mt-2"
+                                                "flex flex-col justify-center"
                                             },
-                                            [_vm._v("2")]
+                                            [
+                                              _c(
+                                                "p",
+                                                {
+                                                  staticClass:
+                                                    "text-lg text-white"
+                                                },
+                                                [
+                                                  _vm._v(
+                                                    _vm._s(_vm.winners[1].alias)
+                                                  )
+                                                ]
+                                              ),
+                                              _vm._v(" "),
+                                              _c(
+                                                "p",
+                                                {
+                                                  staticClass:
+                                                    "text-sm text-white font-light"
+                                                },
+                                                [
+                                                  _vm._v(
+                                                    _vm._s(_vm.winners[1].won) +
+                                                      " juegos ganados"
+                                                  )
+                                                ]
+                                              ),
+                                              _vm._v(" "),
+                                              _c(
+                                                "p",
+                                                {
+                                                  staticClass:
+                                                    "text-sm text-white font-light"
+                                                },
+                                                [
+                                                  _vm._v(
+                                                    _vm._s(
+                                                      _vm.winners[1].points
+                                                    ) + " Puntos"
+                                                  )
+                                                ]
+                                              )
+                                            ]
                                           )
-                                        ]),
-                                        _vm._v(" "),
-                                        _c(
-                                          "b-col",
-                                          {
-                                            staticClass:
-                                              "flex flex-col justify-center"
-                                          },
-                                          [
-                                            _c(
-                                              "p",
-                                              {
-                                                staticClass:
-                                                  "text-lg text-white"
-                                              },
-                                              [
-                                                _vm._v(
-                                                  _vm._s(_vm.winners[1].alias)
-                                                )
-                                              ]
-                                            ),
-                                            _vm._v(" "),
-                                            _c(
-                                              "p",
-                                              {
-                                                staticClass:
-                                                  "text-sm text-white font-light"
-                                              },
-                                              [
-                                                _vm._v(
-                                                  _vm._s(_vm.winners[1].won) +
-                                                    " juegos ganados "
-                                                )
-                                              ]
-                                            ),
-                                            _vm._v(" "),
-                                            _c(
-                                              "p",
-                                              {
-                                                staticClass:
-                                                  "text-sm text-white font-light"
-                                              },
-                                              [
-                                                _vm._v(
-                                                  _vm._s(
-                                                    _vm.winners[1].points
-                                                  ) + " Puntos"
-                                                )
-                                              ]
-                                            ),
-                                            _vm._v(" "),
-                                            _c(
-                                              "p",
-                                              {
-                                                staticClass:
-                                                  "text-sm text-white font-light"
-                                              },
-                                              [
-                                                _vm._v(
-                                                  _vm._s(
-                                                    _vm.winners[1].points
-                                                  ) + " Puntos"
-                                                )
-                                              ]
-                                            )
-                                          ]
-                                        )
-                                      ],
-                                      1
-                                    )
-                                  ],
-                                  1
-                                )
-                              ])
+                                        ],
+                                        1
+                                      )
+                                    ],
+                                    1
+                                  )
+                                ]
+                              )
                             : _vm._e(),
                           _vm._v(" "),
-                          _c("b-col", [
-                            _c(
-                              "div",
-                              {
-                                staticClass:
-                                  "rounded-lg bg-gold shadow border-0 flex items-center pl-4 p-4"
-                              },
-                              [
-                                _c(
-                                  "b-row",
-                                  [
-                                    _c("b-col", { attrs: { md: "2" } }, [
+                          _c(
+                            "b-col",
+                            {
+                              staticClass: "my-2 md:my-0",
+                              attrs: { sm: "12", md: "4" }
+                            },
+                            [
+                              _c(
+                                "div",
+                                {
+                                  staticClass:
+                                    "rounded-lg bg-gold shadow border-0 flex items-center pl-4 p-4"
+                                },
+                                [
+                                  _c(
+                                    "b-row",
+                                    [
+                                      _c("b-col", { attrs: { md: "2" } }, [
+                                        _c(
+                                          "p",
+                                          {
+                                            staticClass:
+                                              "text-5xl font-bold text-white mt-2"
+                                          },
+                                          [_vm._v("1")]
+                                        )
+                                      ]),
+                                      _vm._v(" "),
                                       _c(
-                                        "p",
+                                        "b-col",
                                         {
                                           staticClass:
-                                            "text-5xl font-bold text-white mt-2"
+                                            "flex flex-col justify-center"
                                         },
-                                        [_vm._v("1")]
-                                      )
-                                    ]),
-                                    _vm._v(" "),
-                                    _c(
-                                      "b-col",
-                                      {
-                                        staticClass:
-                                          "flex flex-col justify-center"
-                                      },
-                                      [
-                                        _c(
-                                          "p",
-                                          { staticClass: "text-lg text-white" },
-                                          [_vm._v(_vm._s(_vm.winners[0].alias))]
-                                        ),
-                                        _vm._v(" "),
-                                        _c(
-                                          "p",
-                                          {
-                                            staticClass:
-                                              "text-sm text-white font-light"
-                                          },
-                                          [
-                                            _vm._v(
-                                              _vm._s(_vm.winners[0].won) +
-                                                " juegos ganados "
-                                            )
-                                          ]
-                                        ),
-                                        _vm._v(" "),
-                                        _c(
-                                          "p",
-                                          {
-                                            staticClass:
-                                              "text-sm text-white font-light"
-                                          },
-                                          [
-                                            _vm._v(
-                                              _vm._s(_vm.winners[0].points) +
-                                                " Puntos"
-                                            )
-                                          ]
-                                        )
-                                      ]
-                                    )
-                                  ],
-                                  1
-                                )
-                              ],
-                              1
-                            )
-                          ]),
-                          _vm._v(" "),
-                          _vm.winners.length >= 3
-                            ? _c("b-col", [
-                                _c(
-                                  "div",
-                                  {
-                                    staticClass:
-                                      "rounded-lg bg-bronze shadow border-0 flex items-center pl-4"
-                                  },
-                                  [
-                                    _c(
-                                      "b-row",
-                                      [
-                                        _c("b-col", { attrs: { md: "2" } }, [
+                                        [
+                                          _c(
+                                            "p",
+                                            {
+                                              staticClass: "text-lg text-white"
+                                            },
+                                            [
+                                              _vm._v(
+                                                _vm._s(_vm.winners[0].alias)
+                                              )
+                                            ]
+                                          ),
+                                          _vm._v(" "),
                                           _c(
                                             "p",
                                             {
                                               staticClass:
-                                                "text-4xl font-bold text-white mt-2"
+                                                "text-sm text-white font-light"
                                             },
-                                            [_vm._v("3")]
+                                            [
+                                              _vm._v(
+                                                _vm._s(_vm.winners[0].won) +
+                                                  " juegos ganados"
+                                              )
+                                            ]
+                                          ),
+                                          _vm._v(" "),
+                                          _c(
+                                            "p",
+                                            {
+                                              staticClass:
+                                                "text-sm text-white font-light"
+                                            },
+                                            [
+                                              _vm._v(
+                                                _vm._s(_vm.winners[0].points) +
+                                                  " Puntos"
+                                              )
+                                            ]
                                           )
-                                        ]),
-                                        _vm._v(" "),
+                                        ]
+                                      )
+                                    ],
+                                    1
+                                  )
+                                ],
+                                1
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-col",
+                            {
+                              staticClass: "my-2 md:my-0",
+                              attrs: { sm: "12", md: "4" }
+                            },
+                            [
+                              _c(
+                                "div",
+                                {
+                                  staticClass:
+                                    "rounded-lg bg-bronze shadow border-0 flex items-center pl-4"
+                                },
+                                [
+                                  _c(
+                                    "b-row",
+                                    [
+                                      _c("b-col", { attrs: { md: "2" } }, [
                                         _c(
-                                          "b-col",
+                                          "p",
                                           {
                                             staticClass:
-                                              "flex flex-col justify-center"
+                                              "text-4xl font-bold text-white mt-2"
                                           },
-                                          [
-                                            _c(
-                                              "p",
-                                              {
-                                                staticClass:
-                                                  "text-lg text-white"
-                                              },
-                                              [
-                                                _vm._v(
-                                                  _vm._s(_vm.winners[2].alias)
-                                                )
-                                              ]
-                                            ),
-                                            _vm._v(" "),
-                                            _c(
-                                              "p",
-                                              {
-                                                staticClass:
-                                                  "text-sm text-white font-light"
-                                              },
-                                              [
-                                                _vm._v(
-                                                  _vm._s(_vm.winners[2].won) +
-                                                    " juegos ganados "
-                                                )
-                                              ]
-                                            ),
-                                            _vm._v(" "),
-                                            _c(
-                                              "p",
-                                              {
-                                                staticClass:
-                                                  "text-sm text-white font-light"
-                                              },
-                                              [
-                                                _vm._v(
-                                                  _vm._s(
-                                                    _vm.winners[2].points
-                                                  ) + " Puntos"
-                                                )
-                                              ]
-                                            )
-                                          ]
+                                          [_vm._v("3")]
                                         )
-                                      ],
-                                      1
-                                    )
-                                  ],
-                                  1
-                                )
-                              ])
-                            : _vm._e()
+                                      ]),
+                                      _vm._v(" "),
+                                      _c(
+                                        "b-col",
+                                        {
+                                          staticClass:
+                                            "flex flex-col justify-center"
+                                        },
+                                        [
+                                          _c(
+                                            "p",
+                                            {
+                                              staticClass: "text-lg text-white"
+                                            },
+                                            [
+                                              _vm._v(
+                                                _vm._s(
+                                                  _vm.winners.length >= 3
+                                                    ? _vm.winners[2].alias
+                                                    : ""
+                                                )
+                                              )
+                                            ]
+                                          ),
+                                          _vm._v(" "),
+                                          _vm.winners.length >= 3
+                                            ? _c(
+                                                "p",
+                                                {
+                                                  staticClass:
+                                                    "text-sm text-white font-light"
+                                                },
+                                                [
+                                                  _vm._v(
+                                                    _vm._s(_vm.winners[2].won) +
+                                                      " juegos ganados"
+                                                  )
+                                                ]
+                                              )
+                                            : _c("p", {
+                                                staticClass:
+                                                  "text-sm text-white font-light"
+                                              }),
+                                          _vm._v(" "),
+                                          _vm.winners.length >= 3
+                                            ? _c(
+                                                "p",
+                                                {
+                                                  staticClass:
+                                                    "text-sm text-white font-light"
+                                                },
+                                                [
+                                                  _vm._v(
+                                                    _vm._s(
+                                                      _vm.winners[2].points
+                                                    ) + " Puntos"
+                                                  )
+                                                ]
+                                              )
+                                            : _c("p", {
+                                                staticClass:
+                                                  "text-sm text-white font-light"
+                                              })
+                                        ]
+                                      )
+                                    ],
+                                    1
+                                  )
+                                ],
+                                1
+                              )
+                            ]
+                          )
                         ],
                         1
                       )
@@ -103160,6 +103236,7 @@ var routes = [{
   component: _components_Home__WEBPACK_IMPORTED_MODULE_2__["default"]
 }, {
   path: '/juego/:id',
+  name: 'Game',
   component: _components_Room__WEBPACK_IMPORTED_MODULE_3__["default"]
 }, {
   path: '/home',
@@ -103175,6 +103252,9 @@ router.beforeEach(function (to, from, next) {
     name: 'AuthHome'
   });
   if (!_helpers_User__WEBPACK_IMPORTED_MODULE_6__["default"].loggedIn() && to.name === 'AuthHome') next({
+    name: 'Home'
+  });
+  if (!_helpers_User__WEBPACK_IMPORTED_MODULE_6__["default"].loggedIn() && !localStorage.getItem('guest_id') && to.name === 'Game') next({
     name: 'Home'
   });else next();
 });

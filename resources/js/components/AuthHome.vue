@@ -24,12 +24,12 @@
       <div v-if="record == null || record.length == 0 ">
         <p class="text-black">Aún no has jugado ninguna partida</p>
       </div>
-      <div v-else>
+      <div v-else class="table-responsive">
         <b-table striped hover :items="calcRecords" :fields="fields">
           <template v-slot:cell(btn)="row">
             <b-button
               size="sm"
-              :href="'/juego/'+ row.item.mesa_id"
+              :href="'/juego/'+ row.item.mesa_id+'?user='+row.item.guest_id"
             >Ver detalles</b-button>
           </template>
         </b-table>
@@ -74,7 +74,8 @@ export default {
             mesa_id: x.room.id,
             puntos: x.points,
             rondas: x.won,
-            lugar: x.place
+            lugar: x.place,
+            guest_id: x.guest_id
           };
         });
       }
