@@ -85,7 +85,7 @@
                   <td
                     v-for="(round, index) in round(n)"
                     :key="index"
-                    :class="{'text-success': round.points === 0}"
+                    :class="{'bg-success': round.points === 0}"
                   >{{ round.points }}</td>
                 </tr>
               </tbody>
@@ -143,10 +143,11 @@ export default {
       if (val == 8) {
         Room.getWinners(this.room.id).then(data => {
           var keys = Object.keys(data);
+          console.log(data, keys);
           keys.forEach(key => {
             this.winners.push(data[key]);
           });
-          this.winners.reverse();
+          this.winners.sort((a, b) => a.points - b.points);
         });
       }
     }

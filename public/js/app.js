@@ -2498,11 +2498,14 @@ __webpack_require__.r(__webpack_exports__);
       if (val == 8) {
         Room.getWinners(this.room.id).then(function (data) {
           var keys = Object.keys(data);
+          console.log(data, keys);
           keys.forEach(function (key) {
             _this.winners.push(data[key]);
           });
 
-          _this.winners.reverse();
+          _this.winners.sort(function (a, b) {
+            return a.points - b.points;
+          });
         });
       }
     }
@@ -86970,7 +86973,7 @@ var render = function() {
                                     {
                                       key: index,
                                       class: {
-                                        "text-success": round.points === 0
+                                        "bg-success": round.points === 0
                                       }
                                     },
                                     [_vm._v(_vm._s(round.points))]
