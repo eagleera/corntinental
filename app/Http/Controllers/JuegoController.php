@@ -11,6 +11,7 @@ use App\Round;
 use App\Providers\RouteServiceProvider;
 use Symfony\Component\HttpFoundation\Cookie;
 use App\Events\JoinEvent;
+use Illuminate\Support\Facades\Crypt;
 
 class JuegoController extends Controller
 {
@@ -23,7 +24,8 @@ class JuegoController extends Controller
             'user_id' => 'sometimes'
         ]);
         $room = new Room;
-        $room->password = substr(str_shuffle("0123456789"), 0, 5);
+        $pwd = substr(str_shuffle("0123456789"), 0, 5);
+        $room->password = Crypt::encryptString(strval(rand(10000,99999)));
         $room->status = true;
         $room->name = $data['room_name'];
         $room->save();
@@ -36,6 +38,7 @@ class JuegoController extends Controller
 
     public function index(Request $request, $room_id){
         $room = Room::with('guests', 'points', 'owner')->find($room_id);
+        $room->password = Crypt::decryptString($room->password);
         return $room;
     }
 
@@ -48,10 +51,14 @@ class JuegoController extends Controller
             'room_id' => 'required|exists:rooms,id',
             'password' => 'required|max:5',
             'alias' => 'sometimes',
-            'user_id' => 'sometimes',
+            'user_id' => 'nullable|exists:user,id',
         ]);
-        $room = Room::where(['id' => $data['room_id'], 'password' => $data['password']])->first();
+        $room = Room::find($data['room_id'])->first();
         if(!$room){
+            abort(404);
+        }
+        $decrypted_pwd = Crypt::decryptString($room->password);
+        if($decrypted_pwd != $data['password']){
             abort(404);
         }
         $guest = $this->createGuest($room->id, $data['alias'], $data['user_id']);

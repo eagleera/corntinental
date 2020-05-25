@@ -162,10 +162,36 @@ export default {
   },
   methods: {
     doLogin() {
-      User.login(this.loginform);
+      User.login(this.loginform).then(errors => {
+        this.$bvToast.toast("El correo o la contraseña son incorrectos", {
+          title: `Ups... ha ocurrido un error`,
+          variant: "danger",
+          solid: true
+        });
+      });
     },
     doSignup() {
-      User.register(this.signupform);
+      User.register(this.signupform).then(errors => {
+        console.log(errors);
+        Object.keys(errors).forEach((element, key) => {
+          switch (element) {
+            case "email":
+              this.$bvToast.toast("Este email ya se encuentra en uso", {
+                title: `Ups... ha ocurrido un error`,
+                variant: "danger",
+                solid: true
+              });
+              break;
+            case "name":
+              this.$bvToast.toast("El nombre debe ser minimo 5 letras", {
+                title: `Ups... ha ocurrido un error`,
+                variant: "danger",
+                solid: true
+              });
+              break;
+          }
+        });
+      });
     }
   }
 };

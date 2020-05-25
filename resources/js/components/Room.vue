@@ -98,6 +98,9 @@
             </table>
           </div>
         </div>
+        <div v-if="actual_round == 1" class="mb-3">
+          <b-button variant="dark" v-b-modal.add-players-modal>Agregar jugadores manualmente</b-button>
+        </div>
         <div v-if="is_owner && actual_round < 8">
           <b-button variant="success" v-b-modal.results-modal>Anotar resultados de ronda</b-button>
         </div>
@@ -111,6 +114,17 @@
               invalid-feedback="El nombre es obligatorio"
             >
               <b-form-input id="name-input" v-model="guest.points" required></b-form-input>
+            </b-form-group>
+          </form>
+        </b-modal>
+        <b-modal id="add-players-modal" ref="modal" title="Agregar jugador" @ok="addPlayer">
+          <form ref="addplayerform" @submit.stop.prevent="addPlayer">
+            <b-form-group
+              label="Nombre del jugador"
+              label-for="name-input"
+              invalid-feedback="El nombre es obligatorio"
+            >
+              <b-form-input id="name-input" v-model="player_name" required></b-form-input>
             </b-form-group>
           </form>
         </b-modal>
@@ -130,7 +144,8 @@ export default {
       me: null,
       actual_round: 1,
       rounds: [],
-      winners: []
+      winners: [],
+      player_name: null
     };
   },
   computed: {
@@ -153,6 +168,15 @@ export default {
     }
   },
   methods: {
+    addPlayer() {
+      let data = {
+        alias: this.player_name,
+        password: this.room.password,
+        room_id: this.room.id,
+        user_id: null
+      }
+      Room.joinLocal(data);
+    },
     nextRound() {
       let round = {
         actual: this.actual_round,
@@ -206,7 +230,7 @@ export default {
   mounted() {
     Room.getData(this.$route.params.id).then(data => {
       this.room = data;
-      if (this.room.owner.guest_id == localStorage.getItem("guest_id")) {
+      if (data.owner.guest_id == localStorage.getItem("guest_id")) {
         this.is_owner = true;
       }
       if (!data.status) {
@@ -223,7 +247,9 @@ export default {
       this.rounds = data;
     });
     Echo.channel("joinChannel").listen("JoinEvent", e => {
+      console.log(e);
       if (this.$route.params.id == e.id) {
+        console.log(e);
         Room.getData(this.$route.params.id).then(data => {
           this.room = data;
           console.log(this.room);

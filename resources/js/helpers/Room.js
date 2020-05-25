@@ -5,17 +5,23 @@ class Room {
             .then(res => {
                 console.log(res.data);
                 localStorage.setItem("guest_id", res.data.guest_key);
+                localStorage.setItem("game_id", res.data.id);
                 document.cookie = "guest_id=" + res.data.guest_key;
                 window.location = "/juego/" + res.data.id;
             })
             .catch(error => console.log(error.response.data));
     }
+    joinLocal(data) {
+        axios.put("/api/unirse_juego", data).then(res => {
+            location.reload();
+        });
+    }
     join(data) {
         axios
             .put("/api/unirse_juego", data)
             .then(res => {
-                console.log(res.data);
                 localStorage.setItem("guest_id", res.data.guest_key);
+                localStorage.setItem("game_id", res.data.id);
                 document.cookie = "guest_id=" + res.data.guest_key;
                 window.location = "/juego/" + res.data.id;
             })

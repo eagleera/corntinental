@@ -31,9 +31,10 @@ const router = new VueRouter({
     mode : 'history'
 })
 router.beforeEach((to, from, next) => {
-    if ( User.loggedIn() && to.name === 'Home') next({ name: 'AuthHome' })
+    if (User.loggedIn() && to.name === 'Home') next({ name: 'AuthHome' })
     if (!User.loggedIn() && to.name === 'AuthHome') next({ name: 'Home' })
-    if (!User.loggedIn() && !localStorage.getItem('guest_id') && to.name === 'Game') next({ name: 'Home' })
+    if (!localStorage.getItem('guest_id') && to.name === 'Game') next({ name: 'Home' })
+    if (localStorage.getItem('guest_id') && to.name === 'Home') next({ name: 'Game', params: { id: localStorage.getItem('game_id')}})
     else next()
 })
 

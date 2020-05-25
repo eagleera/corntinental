@@ -2288,10 +2288,43 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     doLogin: function doLogin() {
-      User.login(this.loginform);
+      var _this = this;
+
+      User.login(this.loginform).then(function (errors) {
+        _this.$bvToast.toast("El correo o la contraseña son incorrectos", {
+          title: "Ups... ha ocurrido un error",
+          variant: "danger",
+          solid: true
+        });
+      });
     },
     doSignup: function doSignup() {
-      User.register(this.signupform);
+      var _this2 = this;
+
+      User.register(this.signupform).then(function (errors) {
+        console.log(errors);
+        Object.keys(errors).forEach(function (element, key) {
+          switch (element) {
+            case "email":
+              _this2.$bvToast.toast("Este email ya se encuentra en uso", {
+                title: "Ups... ha ocurrido un error",
+                variant: "danger",
+                solid: true
+              });
+
+              break;
+
+            case "name":
+              _this2.$bvToast.toast("El nombre debe ser minimo 5 letras", {
+                title: "Ups... ha ocurrido un error",
+                variant: "danger",
+                solid: true
+              });
+
+              break;
+          }
+        });
+      });
     }
   }
 });
@@ -2473,6 +2506,20 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "room",
   data: function data() {
@@ -2483,7 +2530,8 @@ __webpack_require__.r(__webpack_exports__);
       me: null,
       actual_round: 1,
       rounds: [],
-      winners: []
+      winners: [],
+      player_name: null
     };
   },
   computed: {
@@ -2511,6 +2559,15 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   methods: {
+    addPlayer: function addPlayer() {
+      var data = {
+        alias: this.player_name,
+        password: this.room.password,
+        room_id: this.room.id,
+        user_id: null
+      };
+      Room.joinLocal(data);
+    },
     nextRound: function nextRound() {
       var _this2 = this;
 
@@ -2578,7 +2635,7 @@ __webpack_require__.r(__webpack_exports__);
     Room.getData(this.$route.params.id).then(function (data) {
       _this4.room = data;
 
-      if (_this4.room.owner.guest_id == localStorage.getItem("guest_id")) {
+      if (data.owner.guest_id == localStorage.getItem("guest_id")) {
         _this4.is_owner = true;
       }
 
@@ -2596,7 +2653,10 @@ __webpack_require__.r(__webpack_exports__);
       _this4.rounds = data;
     });
     Echo.channel("joinChannel").listen("JoinEvent", function (e) {
+      console.log(e);
+
       if (_this4.$route.params.id == e.id) {
+        console.log(e);
         Room.getData(_this4.$route.params.id).then(function (data) {
           _this4.room = data;
           console.log(_this4.room);
@@ -87006,6 +87066,30 @@ var render = function() {
                   : _vm._e()
               ]),
               _vm._v(" "),
+              _vm.actual_round == 1
+                ? _c(
+                    "div",
+                    { staticClass: "mb-3" },
+                    [
+                      _c(
+                        "b-button",
+                        {
+                          directives: [
+                            {
+                              name: "b-modal",
+                              rawName: "v-b-modal.add-players-modal",
+                              modifiers: { "add-players-modal": true }
+                            }
+                          ],
+                          attrs: { variant: "dark" }
+                        },
+                        [_vm._v("Agregar jugadores manualmente")]
+                      )
+                    ],
+                    1
+                  )
+                : _vm._e(),
+              _vm._v(" "),
               _vm.is_owner && _vm.actual_round < 8
                 ? _c(
                     "div",
@@ -87078,6 +87162,56 @@ var render = function() {
                         1
                       )
                     }),
+                    1
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "b-modal",
+                {
+                  ref: "modal",
+                  attrs: { id: "add-players-modal", title: "Agregar jugador" },
+                  on: { ok: _vm.addPlayer }
+                },
+                [
+                  _c(
+                    "form",
+                    {
+                      ref: "addplayerform",
+                      on: {
+                        submit: function($event) {
+                          $event.stopPropagation()
+                          $event.preventDefault()
+                          return _vm.addPlayer($event)
+                        }
+                      }
+                    },
+                    [
+                      _c(
+                        "b-form-group",
+                        {
+                          attrs: {
+                            label: "Nombre del jugador",
+                            "label-for": "name-input",
+                            "invalid-feedback": "El nombre es obligatorio"
+                          }
+                        },
+                        [
+                          _c("b-form-input", {
+                            attrs: { id: "name-input", required: "" },
+                            model: {
+                              value: _vm.player_name,
+                              callback: function($$v) {
+                                _vm.player_name = $$v
+                              },
+                              expression: "player_name"
+                            }
+                          })
+                        ],
+                        1
+                      )
+                    ],
                     1
                   )
                 ]
@@ -103055,6 +103189,7 @@ var Room = /*#__PURE__*/function () {
       axios.post("/api/nuevo_juego", data).then(function (res) {
         console.log(res.data);
         localStorage.setItem("guest_id", res.data.guest_key);
+        localStorage.setItem("game_id", res.data.id);
         document.cookie = "guest_id=" + res.data.guest_key;
         window.location = "/juego/" + res.data.id;
       })["catch"](function (error) {
@@ -103062,11 +103197,18 @@ var Room = /*#__PURE__*/function () {
       });
     }
   }, {
+    key: "joinLocal",
+    value: function joinLocal(data) {
+      axios.put("/api/unirse_juego", data).then(function (res) {
+        location.reload();
+      });
+    }
+  }, {
     key: "join",
     value: function join(data) {
       axios.put("/api/unirse_juego", data).then(function (res) {
-        console.log(res.data);
         localStorage.setItem("guest_id", res.data.guest_key);
+        localStorage.setItem("game_id", res.data.id);
         document.cookie = "guest_id=" + res.data.guest_key;
         window.location = "/juego/" + res.data.id;
       })["catch"](function (error) {
@@ -103150,48 +103292,48 @@ var User = /*#__PURE__*/function () {
   _createClass(User, [{
     key: "login",
     value: function login(data) {
-      axios.post('/api/auth/login', data).then(function (res) {
-        localStorage.setItem('access_token', res.data.access_token);
+      return axios.post("/api/auth/login", data).then(function (res) {
+        localStorage.setItem("access_token", res.data.access_token);
         location.reload();
       })["catch"](function (error) {
-        return console.log(error.response.data);
+        return error.response.data;
       });
     }
   }, {
     key: "logout",
     value: function logout() {
-      localStorage.removeItem('access_token');
+      localStorage.removeItem("access_token");
       location.reload();
     }
   }, {
     key: "register",
     value: function register(data) {
-      axios.post('/api/auth/signup', data).then(function (res) {
+      return axios.post("/api/auth/signup", data).then(function (res) {
         console.log(res.data);
-        localStorage.setItem('access_token', res.data.access_token);
+        localStorage.setItem("access_token", res.data.access_token);
         location.reload();
       })["catch"](function (error) {
-        return console.log(error.response.data);
+        return error.response.data.errors;
       });
     }
   }, {
     key: "getRecord",
     value: function getRecord() {
-      return axios.get('/api/record').then(function (res) {
+      return axios.get("/api/record").then(function (res) {
         return res.data;
       })["catch"](function (error) {
-        localStorage.removeItem('access_token');
+        localStorage.removeItem("access_token");
         location.reload();
       });
     }
   }, {
     key: "loggedIn",
     value: function loggedIn() {
-      if (localStorage.getItem('access_token')) {
-        var payload = JSON.parse(atob(localStorage.getItem('access_token').split(".")[1]));
+      if (localStorage.getItem("access_token")) {
+        var payload = JSON.parse(atob(localStorage.getItem("access_token").split(".")[1]));
 
         if (payload) {
-          return payload.iss == 'https://prograweb.dev/api/auth/login' || 'https://prograweb.dev/api/auth/signup' ? true : false;
+          return payload.iss == "https://prograweb.dev/api/auth/login" || "https://prograweb.dev/api/auth/signup" ? true : false;
         }
 
         return false;
@@ -103257,8 +103399,14 @@ router.beforeEach(function (to, from, next) {
   if (!_helpers_User__WEBPACK_IMPORTED_MODULE_6__["default"].loggedIn() && to.name === 'AuthHome') next({
     name: 'Home'
   });
-  if (!_helpers_User__WEBPACK_IMPORTED_MODULE_6__["default"].loggedIn() && !localStorage.getItem('guest_id') && to.name === 'Game') next({
+  if (!localStorage.getItem('guest_id') && to.name === 'Game') next({
     name: 'Home'
+  });
+  if (localStorage.getItem('guest_id') && to.name === 'Home') next({
+    name: 'Game',
+    params: {
+      id: localStorage.getItem('game_id')
+    }
   });else next();
 });
 /* harmony default export */ __webpack_exports__["default"] = (router);
