@@ -27,7 +27,7 @@ class Room {
     }
     close(room_id){
         axios
-            .put(`/api/close_table/${room_id}`)
+            .delete(`/api/close_table/${room_id}`)
             .then(res => {
                 localStorage.removeItem("guest_id");
                 localStorage.removeItem("game_id");
