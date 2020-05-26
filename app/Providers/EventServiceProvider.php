@@ -20,7 +20,13 @@ class EventServiceProvider extends ServiceProvider
         ],
         'App\Events\JoinEvent' => [
             'App\Listeners\JoinEventListener',
-          ],
+        ],
+        'App\Events\CloseEvent' => [
+            'App\Listeners\CloseEventListener',
+        ],
+        'App\Events\PointsEvent' => [
+            'App\Listeners\PointsEventListener',
+        ],
     ];
 
     /**

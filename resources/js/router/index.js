@@ -33,8 +33,10 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
     if (User.loggedIn() && to.name === 'Home') next({ name: 'AuthHome' })
     if (!User.loggedIn() && to.name === 'AuthHome') next({ name: 'Home' })
+    if(User.loggedIn() && to.query.user && to.name == 'Game') return next();
     if (!localStorage.getItem('guest_id') && to.name === 'Game') next({ name: 'Home' })
     if (localStorage.getItem('guest_id') && to.name === 'Home') next({ name: 'Game', params: { id: localStorage.getItem('game_id')}})
+    if (localStorage.getItem('guest_id') && to.name === 'AuthHome') next({ name: 'Game', params: { id: localStorage.getItem('game_id')}})
     else next()
 })
 

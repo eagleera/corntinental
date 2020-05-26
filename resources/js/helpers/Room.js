@@ -12,9 +12,7 @@ class Room {
             .catch(error => console.log(error.response.data));
     }
     joinLocal(data) {
-        axios.put("/api/unirse_juego", data).then(res => {
-            location.reload();
-        });
+        axios.put("/api/unirse_juego", data)
     }
     join(data) {
         axios
@@ -24,6 +22,17 @@ class Room {
                 localStorage.setItem("game_id", res.data.id);
                 document.cookie = "guest_id=" + res.data.guest_key;
                 window.location = "/juego/" + res.data.id;
+            })
+            .catch(error => console.log(error.response.data));
+    }
+    close(room_id){
+        axios
+            .put(`/api/close_table/${room_id}`)
+            .then(res => {
+                localStorage.removeItem("guest_id");
+                localStorage.removeItem("game_id");
+                document.cookie = 'guest_id=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+                window.location = "/";
             })
             .catch(error => console.log(error.response.data));
     }

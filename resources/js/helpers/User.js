@@ -3,8 +3,18 @@ class User {
         return axios
             .post("/api/auth/login", data)
             .then(res => {
-                localStorage.setItem("access_token", res.data.access_token);
-                location.reload();
+                if (res.data) {
+                    console.log(res.data.access_token);
+                    localStorage.setItem("access_token", res.data.access_token);
+                    const JWTtoken = `Bearer ${localStorage.getItem(
+                        "access_token"
+                    )}`;
+
+                    window.axios.defaults.headers.common[
+                        "Authorization"
+                    ] = JWTtoken;
+                    return true;
+                }
             })
             .catch(error => error.response.data);
     }
@@ -18,6 +28,12 @@ class User {
             .then(res => {
                 console.log(res.data);
                 localStorage.setItem("access_token", res.data.access_token);
+                const JWTtoken = `Bearer ${localStorage.getItem(
+                    "access_token"
+                )}`;
+                window.axios.defaults.headers.common[
+                    "Authorization"
+                ] = JWTtoken;
                 location.reload();
             })
             .catch(error => {
@@ -25,15 +41,13 @@ class User {
             });
     }
     getRecord() {
-        return axios
-            .get("/api/record")
-            .then(res => {
-                return res.data;
-            })
-            .catch(error => {
-                localStorage.removeItem("access_token");
-                location.reload();
-            });
+        return axios.get("/api/record").then(res => {
+            return res.data;
+        });
+        // .catch(error => {
+        //     localStorage.removeItem("access_token");
+        //     location.reload();
+        // });
     }
     loggedIn() {
         if (localStorage.getItem("access_token")) {

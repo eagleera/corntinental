@@ -162,7 +162,10 @@ export default {
   },
   methods: {
     doLogin() {
-      User.login(this.loginform).then(errors => {
+      User.login(this.loginform).then(res => {
+        if(res === true){
+          this.$router.push({ name: 'AuthHome'});
+        }
         this.$bvToast.toast("El correo o la contraseña son incorrectos", {
           title: `Ups... ha ocurrido un error`,
           variant: "danger",

@@ -25,6 +25,7 @@ Route::middleware('player')->get('/winners/{id}', 'JuegoController@getWinners');
 Route::get('/record', 'JuegoController@record');
 Route::get('/rounds', 'JuegoController@getRounds');
 Route::put('/siguiente_ronda/{room_id}', 'JuegoController@nextRound');
+Route::put('/close_table/{room_id}', 'JuegoController@closeTable');
 Route::group(['middleware' => 'api','prefix' => 'auth'], function ($router) {
     Route::post('login', 'AuthController@login');
     Route::post('signup', 'AuthController@signup');
