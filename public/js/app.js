@@ -103509,10 +103509,10 @@ var User = /*#__PURE__*/function () {
     value: function getRecord() {
       return axios.get("/api/record").then(function (res) {
         return res.data;
-      }); // .catch(error => {
-      //     localStorage.removeItem("access_token");
-      //     location.reload();
-      // });
+      })["catch"](function (error) {
+        localStorage.removeItem("access_token");
+        location.reload();
+      });
     }
   }, {
     key: "loggedIn",

@@ -121,12 +121,11 @@ class JuegoController extends Controller
                 foreach($plays as $key=>$value){
                     if($value['guest_id'] == $guest->getKey()){
                         $place = $key;
-                    break;
+                        $plays_temp = $plays[$place];
+                        $plays_temp['room'] = $guest->room;
+                        $plays_temp['place'] = $place + 1;
+                        $record[] = $plays_temp;
                     }
-                    $plays = $plays[$place];
-                    $plays['room'] = $guest->room;
-                    $plays['place'] = $place + 1;
-                    $record[] = $plays;
                 }
             }
         }

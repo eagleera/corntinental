@@ -43,11 +43,11 @@ class User {
     getRecord() {
         return axios.get("/api/record").then(res => {
             return res.data;
+        })
+        .catch(error => {
+            localStorage.removeItem("access_token");
+            location.reload();
         });
-        // .catch(error => {
-        //     localStorage.removeItem("access_token");
-        //     location.reload();
-        // });
     }
     loggedIn() {
         if (localStorage.getItem("access_token")) {
