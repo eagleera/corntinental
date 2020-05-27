@@ -2288,10 +2288,49 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     doLogin: function doLogin() {
-      User.login(this.loginform);
+      var _this = this;
+
+      User.login(this.loginform).then(function (res) {
+        if (res === true) {
+          _this.$router.push({
+            name: 'AuthHome'
+          });
+        }
+
+        _this.$bvToast.toast("El correo o la contraseña son incorrectos", {
+          title: "Ups... ha ocurrido un error",
+          variant: "danger",
+          solid: true
+        });
+      });
     },
     doSignup: function doSignup() {
-      User.register(this.signupform);
+      var _this2 = this;
+
+      User.register(this.signupform).then(function (errors) {
+        console.log(errors);
+        Object.keys(errors).forEach(function (element, key) {
+          switch (element) {
+            case "email":
+              _this2.$bvToast.toast("Este email ya se encuentra en uso", {
+                title: "Ups... ha ocurrido un error",
+                variant: "danger",
+                solid: true
+              });
+
+              break;
+
+            case "name":
+              _this2.$bvToast.toast("El nombre debe ser minimo 5 letras", {
+                title: "Ups... ha ocurrido un error",
+                variant: "danger",
+                solid: true
+              });
+
+              break;
+          }
+        });
+      });
     }
   }
 });
@@ -2473,6 +2512,41 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "room",
   data: function data() {
@@ -2483,33 +2557,80 @@ __webpack_require__.r(__webpack_exports__);
       me: null,
       actual_round: 1,
       rounds: [],
-      winners: []
+      winners: [],
+      player_name: null
     };
   },
   computed: {
     pwdArray: function pwdArray() {
       return Array.from(this.room.password.toString());
+    },
+    winning: function winning() {
+      var _this = this;
+
+      var totals = [];
+      this.room.guests.forEach(function (guest) {
+        totals.push(_this.total(guest.id));
+      });
+      return Math.min.apply(Math, totals);
     }
   },
   watch: {
     actual_round: function actual_round(val) {
-      var _this = this;
+      var _this2 = this;
 
       if (val == 8) {
         Room.getWinners(this.room.id).then(function (data) {
           var keys = Object.keys(data);
           keys.forEach(function (key) {
-            _this.winners.push(data[key]);
+            _this2.winners.push(data[key]);
           });
 
-          _this.winners.reverse();
+          _this2.winners.sort(function (a, b) {
+            return a.points - b.points;
+          });
         });
       }
     }
   },
   methods: {
+    closeTable: function closeTable() {
+      var _this3 = this;
+
+      this.$bvModal.msgBoxConfirm("Estas seguro que deseas cerrar la mesa y terminar la partida", {
+        title: "Porfavor confirma",
+        size: "sm",
+        buttonSize: "sm",
+        okVariant: "danger",
+        okTitle: "Si",
+        cancelTitle: "No",
+        footerClass: "p-2",
+        hideHeaderClose: false,
+        centered: true
+      }).then(function (value) {
+        if (value) {
+          Room.close(_this3.room.id);
+        }
+      });
+    },
+    getOut: function getOut() {
+      localStorage.removeItem("guest_id");
+      localStorage.removeItem("game_id");
+      document.cookie = "guest_id=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+      window.location = "/";
+    },
+    addPlayer: function addPlayer() {
+      var data = {
+        alias: this.player_name,
+        password: this.room.password,
+        room_id: this.room.id,
+        user_id: null
+      };
+      Room.joinLocal(data);
+      this.player_name = null;
+    },
     nextRound: function nextRound() {
-      var _this2 = this;
+      var _this4 = this;
 
       var round = {
         actual: this.actual_round,
@@ -2524,11 +2645,11 @@ __webpack_require__.r(__webpack_exports__);
         delete guest.points;
       });
       Room.nextRound(round).then(function (data) {
-        _this2.room = data;
+        _this4.room = data;
       });
     },
     round: function round(id) {
-      var _this3 = this;
+      var _this5 = this;
 
       var grouped = this.groupBy(this.room.points, function (point) {
         return point.round_id;
@@ -2540,7 +2661,7 @@ __webpack_require__.r(__webpack_exports__);
         round = [];
         this.room.guests.forEach(function (guest) {
           round.push({
-            points: id == _this3.actual_round ? "0" : ""
+            points: id == _this5.actual_round ? "0" : ""
           });
         });
       }
@@ -2567,37 +2688,76 @@ __webpack_require__.r(__webpack_exports__);
       }).reduce(function (prev, next) {
         return prev + next.points;
       }, 0);
+    },
+    downPoints: function downPoints(guest_id) {
+      if (this.total(guest_id) === this.winning) {
+        return "👑";
+      }
+
+      return "+" + (this.total(guest_id) - this.winning);
     }
   },
   mounted: function mounted() {
-    var _this4 = this;
+    var _this6 = this;
 
     Room.getData(this.$route.params.id).then(function (data) {
-      _this4.room = data;
+      _this6.room = data;
 
-      if (_this4.room.owner.guest_id == localStorage.getItem("guest_id")) {
-        _this4.is_owner = true;
+      if (data.owner.guest_id == localStorage.getItem("guest_id")) {
+        _this6.is_owner = true;
       }
 
       if (!data.status) {
-        _this4.me = data.guests.filter(function (guest) {
-          return guest.id == _this4.$route.query.user;
+        _this6.me = data.guests.filter(function (guest) {
+          return guest.id == _this6.$route.query.user;
         })[0];
       } else {
-        _this4.me = data.guests.filter(function (guest) {
+        _this6.me = data.guests.filter(function (guest) {
           return guest.guest_id == localStorage.getItem("guest_id");
         })[0];
+        console.log(_this6.me);
       }
     });
     Room.getRounds().then(function (data) {
-      _this4.rounds = data;
+      _this6.rounds = data;
     });
     Echo.channel("joinChannel").listen("JoinEvent", function (e) {
-      if (_this4.$route.params.id == e.id) {
-        Room.getData(_this4.$route.params.id).then(function (data) {
-          _this4.room = data;
-          console.log(_this4.room);
+      if (_this6.$route.params.id == e.id) {
+        _this6.$bvToast.toast(e.guest.alias + " ha entrado a la mesa", {
+          title: "Ha entrado un nuevo jugador!",
+          variant: "info",
+          solid: true
         });
+
+        Room.getData(_this6.$route.params.id).then(function (data) {
+          _this6.room = data;
+          console.log(_this6.room);
+        });
+      }
+    });
+    Echo.channel("pointsChannel").listen("PointsEvent", function (e) {
+      console.log(e);
+
+      if (_this6.$route.params.id == e.id) {
+        Room.getData(_this6.$route.params.id).then(function (data) {
+          _this6.room = data;
+        });
+      }
+    });
+    Echo.channel("closeChannel").listen("CloseEvent", function (e) {
+      if (_this6.$route.params.id == e.id) {
+        _this6.$bvToast.toast("La sala ha sido cerrada por el creador", {
+          title: "\xA1Se ha cerrado la Sala!",
+          variant: "danger",
+          solid: true
+        });
+
+        setTimeout(function () {
+          localStorage.removeItem("guest_id");
+          localStorage.removeItem("game_id");
+          document.cookie = "guest_id=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+          window.location = "/";
+        }, 1000);
       }
     });
   }
@@ -86606,7 +86766,7 @@ var render = function() {
                 ])
               ]),
               _vm._v(" "),
-              _vm.actual_round == 8 && _vm.winners.length > 0
+              _vm.actual_round == 8 || !_vm.room.status
                 ? _c(
                     "div",
                     [
@@ -86621,7 +86781,8 @@ var render = function() {
                             "b-button",
                             {
                               staticClass: "ml-4",
-                              attrs: { variant: "outline-primary", href: "/" }
+                              attrs: { variant: "outline-primary" },
+                              on: { click: _vm.getOut }
                             },
                             [_vm._v("Regresar a inicio")]
                           )
@@ -86629,12 +86790,108 @@ var render = function() {
                         1
                       ),
                       _vm._v(" "),
-                      _c(
-                        "b-row",
-                        { staticClass: "items-center mt-6" },
-                        [
-                          _vm.winners.length >= 2
-                            ? _c(
+                      _vm.winners.length > 0
+                        ? _c(
+                            "b-row",
+                            { staticClass: "items-center mt-6" },
+                            [
+                              _vm.winners.length >= 2
+                                ? _c(
+                                    "b-col",
+                                    {
+                                      staticClass: "my-2 md:my-0",
+                                      attrs: { sm: "12", md: "4" }
+                                    },
+                                    [
+                                      _c(
+                                        "div",
+                                        {
+                                          staticClass:
+                                            "rounded-lg bg-silver shadow border-0 flex items-center pl-4 p-3"
+                                        },
+                                        [
+                                          _c(
+                                            "b-row",
+                                            [
+                                              _c(
+                                                "b-col",
+                                                { attrs: { md: "2" } },
+                                                [
+                                                  _c(
+                                                    "p",
+                                                    {
+                                                      staticClass:
+                                                        "text-4xl font-bold text-white mt-2"
+                                                    },
+                                                    [_vm._v("2")]
+                                                  )
+                                                ]
+                                              ),
+                                              _vm._v(" "),
+                                              _c(
+                                                "b-col",
+                                                {
+                                                  staticClass:
+                                                    "flex flex-col justify-center"
+                                                },
+                                                [
+                                                  _c(
+                                                    "p",
+                                                    {
+                                                      staticClass:
+                                                        "text-lg text-white"
+                                                    },
+                                                    [
+                                                      _vm._v(
+                                                        _vm._s(
+                                                          _vm.winners[1].alias
+                                                        )
+                                                      )
+                                                    ]
+                                                  ),
+                                                  _vm._v(" "),
+                                                  _c(
+                                                    "p",
+                                                    {
+                                                      staticClass:
+                                                        "text-sm text-white font-light"
+                                                    },
+                                                    [
+                                                      _vm._v(
+                                                        _vm._s(
+                                                          _vm.winners[1].won
+                                                        ) + " juegos ganados"
+                                                      )
+                                                    ]
+                                                  ),
+                                                  _vm._v(" "),
+                                                  _c(
+                                                    "p",
+                                                    {
+                                                      staticClass:
+                                                        "text-sm text-white font-light"
+                                                    },
+                                                    [
+                                                      _vm._v(
+                                                        _vm._s(
+                                                          _vm.winners[1].points
+                                                        ) + " Puntos"
+                                                      )
+                                                    ]
+                                                  )
+                                                ]
+                                              )
+                                            ],
+                                            1
+                                          )
+                                        ],
+                                        1
+                                      )
+                                    ]
+                                  )
+                                : _vm._e(),
+                              _vm._v(" "),
+                              _c(
                                 "b-col",
                                 {
                                   staticClass: "my-2 md:my-0",
@@ -86645,7 +86902,7 @@ var render = function() {
                                     "div",
                                     {
                                       staticClass:
-                                        "rounded-lg bg-silver shadow border-0 flex items-center pl-4 p-3"
+                                        "rounded-lg bg-gold shadow border-0 flex items-center pl-4 p-4"
                                     },
                                     [
                                       _c(
@@ -86656,9 +86913,9 @@ var render = function() {
                                               "p",
                                               {
                                                 staticClass:
-                                                  "text-4xl font-bold text-white mt-2"
+                                                  "text-5xl font-bold text-white mt-2"
                                               },
-                                              [_vm._v("2")]
+                                              [_vm._v("1")]
                                             )
                                           ]),
                                           _vm._v(" "),
@@ -86677,7 +86934,7 @@ var render = function() {
                                                 },
                                                 [
                                                   _vm._v(
-                                                    _vm._s(_vm.winners[1].alias)
+                                                    _vm._s(_vm.winners[0].alias)
                                                   )
                                                 ]
                                               ),
@@ -86690,7 +86947,7 @@ var render = function() {
                                                 },
                                                 [
                                                   _vm._v(
-                                                    _vm._s(_vm.winners[1].won) +
+                                                    _vm._s(_vm.winners[0].won) +
                                                       " juegos ganados"
                                                   )
                                                 ]
@@ -86705,7 +86962,7 @@ var render = function() {
                                                 [
                                                   _vm._v(
                                                     _vm._s(
-                                                      _vm.winners[1].points
+                                                      _vm.winners[0].points
                                                     ) + " Puntos"
                                                   )
                                                 ]
@@ -86719,196 +86976,113 @@ var render = function() {
                                     1
                                   )
                                 ]
-                              )
-                            : _vm._e(),
-                          _vm._v(" "),
-                          _c(
-                            "b-col",
-                            {
-                              staticClass: "my-2 md:my-0",
-                              attrs: { sm: "12", md: "4" }
-                            },
-                            [
+                              ),
+                              _vm._v(" "),
                               _c(
-                                "div",
+                                "b-col",
                                 {
-                                  staticClass:
-                                    "rounded-lg bg-gold shadow border-0 flex items-center pl-4 p-4"
+                                  staticClass: "my-2 md:my-0",
+                                  attrs: { sm: "12", md: "4" }
                                 },
                                 [
                                   _c(
-                                    "b-row",
+                                    "div",
+                                    {
+                                      staticClass:
+                                        "rounded-lg bg-bronze shadow border-0 flex items-center pl-4"
+                                    },
                                     [
-                                      _c("b-col", { attrs: { md: "2" } }, [
-                                        _c(
-                                          "p",
-                                          {
-                                            staticClass:
-                                              "text-5xl font-bold text-white mt-2"
-                                          },
-                                          [_vm._v("1")]
-                                        )
-                                      ]),
-                                      _vm._v(" "),
                                       _c(
-                                        "b-col",
-                                        {
-                                          staticClass:
-                                            "flex flex-col justify-center"
-                                        },
+                                        "b-row",
                                         [
-                                          _c(
-                                            "p",
-                                            {
-                                              staticClass: "text-lg text-white"
-                                            },
-                                            [
-                                              _vm._v(
-                                                _vm._s(_vm.winners[0].alias)
-                                              )
-                                            ]
-                                          ),
-                                          _vm._v(" "),
-                                          _c(
-                                            "p",
-                                            {
-                                              staticClass:
-                                                "text-sm text-white font-light"
-                                            },
-                                            [
-                                              _vm._v(
-                                                _vm._s(_vm.winners[0].won) +
-                                                  " juegos ganados"
-                                              )
-                                            ]
-                                          ),
-                                          _vm._v(" "),
-                                          _c(
-                                            "p",
-                                            {
-                                              staticClass:
-                                                "text-sm text-white font-light"
-                                            },
-                                            [
-                                              _vm._v(
-                                                _vm._s(_vm.winners[0].points) +
-                                                  " Puntos"
-                                              )
-                                            ]
-                                          )
-                                        ]
-                                      )
-                                    ],
-                                    1
-                                  )
-                                ],
-                                1
-                              )
-                            ]
-                          ),
-                          _vm._v(" "),
-                          _c(
-                            "b-col",
-                            {
-                              staticClass: "my-2 md:my-0",
-                              attrs: { sm: "12", md: "4" }
-                            },
-                            [
-                              _c(
-                                "div",
-                                {
-                                  staticClass:
-                                    "rounded-lg bg-bronze shadow border-0 flex items-center pl-4"
-                                },
-                                [
-                                  _c(
-                                    "b-row",
-                                    [
-                                      _c("b-col", { attrs: { md: "2" } }, [
-                                        _c(
-                                          "p",
-                                          {
-                                            staticClass:
-                                              "text-4xl font-bold text-white mt-2"
-                                          },
-                                          [_vm._v("3")]
-                                        )
-                                      ]),
-                                      _vm._v(" "),
-                                      _c(
-                                        "b-col",
-                                        {
-                                          staticClass:
-                                            "flex flex-col justify-center"
-                                        },
-                                        [
-                                          _c(
-                                            "p",
-                                            {
-                                              staticClass: "text-lg text-white"
-                                            },
-                                            [
-                                              _vm._v(
-                                                _vm._s(
-                                                  _vm.winners.length >= 3
-                                                    ? _vm.winners[2].alias
-                                                    : ""
-                                                )
-                                              )
-                                            ]
-                                          ),
-                                          _vm._v(" "),
-                                          _vm.winners.length >= 3
-                                            ? _c(
-                                                "p",
-                                                {
-                                                  staticClass:
-                                                    "text-sm text-white font-light"
-                                                },
-                                                [
-                                                  _vm._v(
-                                                    _vm._s(_vm.winners[2].won) +
-                                                      " juegos ganados"
-                                                  )
-                                                ]
-                                              )
-                                            : _c("p", {
+                                          _c("b-col", { attrs: { md: "2" } }, [
+                                            _c(
+                                              "p",
+                                              {
                                                 staticClass:
-                                                  "text-sm text-white font-light"
-                                              }),
+                                                  "text-4xl font-bold text-white mt-2"
+                                              },
+                                              [_vm._v("3")]
+                                            )
+                                          ]),
                                           _vm._v(" "),
-                                          _vm.winners.length >= 3
-                                            ? _c(
+                                          _c(
+                                            "b-col",
+                                            {
+                                              staticClass:
+                                                "flex flex-col justify-center"
+                                            },
+                                            [
+                                              _c(
                                                 "p",
                                                 {
                                                   staticClass:
-                                                    "text-sm text-white font-light"
+                                                    "text-lg text-white"
                                                 },
                                                 [
                                                   _vm._v(
                                                     _vm._s(
-                                                      _vm.winners[2].points
-                                                    ) + " Puntos"
+                                                      _vm.winners.length >= 3
+                                                        ? _vm.winners[2].alias
+                                                        : ""
+                                                    )
                                                   )
                                                 ]
-                                              )
-                                            : _c("p", {
-                                                staticClass:
-                                                  "text-sm text-white font-light"
-                                              })
-                                        ]
+                                              ),
+                                              _vm._v(" "),
+                                              _vm.winners.length >= 3
+                                                ? _c(
+                                                    "p",
+                                                    {
+                                                      staticClass:
+                                                        "text-sm text-white font-light"
+                                                    },
+                                                    [
+                                                      _vm._v(
+                                                        _vm._s(
+                                                          _vm.winners[2].won
+                                                        ) + " juegos ganados"
+                                                      )
+                                                    ]
+                                                  )
+                                                : _c("p", {
+                                                    staticClass:
+                                                      "text-sm text-white font-light"
+                                                  }),
+                                              _vm._v(" "),
+                                              _vm.winners.length >= 3
+                                                ? _c(
+                                                    "p",
+                                                    {
+                                                      staticClass:
+                                                        "text-sm text-white font-light"
+                                                    },
+                                                    [
+                                                      _vm._v(
+                                                        _vm._s(
+                                                          _vm.winners[2].points
+                                                        ) + " Puntos"
+                                                      )
+                                                    ]
+                                                  )
+                                                : _c("p", {
+                                                    staticClass:
+                                                      "text-sm text-white font-light"
+                                                  })
+                                            ]
+                                          )
+                                        ],
+                                        1
                                       )
                                     ],
                                     1
                                   )
-                                ],
-                                1
+                                ]
                               )
-                            ]
+                            ],
+                            1
                           )
-                        ],
-                        1
-                      )
+                        : _vm._e()
                     ],
                     1
                   )
@@ -86970,7 +87144,7 @@ var render = function() {
                                     {
                                       key: index,
                                       class: {
-                                        "text-success": round.points === 0
+                                        "bg-success": round.points === 0
                                       }
                                     },
                                     [_vm._v(_vm._s(round.points))]
@@ -86991,7 +87165,55 @@ var render = function() {
                               _vm._v(" "),
                               _vm._l(_vm.room.guests, function(guest) {
                                 return _c("th", { key: guest.id }, [
-                                  _vm._v(_vm._s(_vm.total(guest.id)))
+                                  _vm._v(
+                                    "\n                  " +
+                                      _vm._s(_vm.total(guest.id)) +
+                                      "\n                  "
+                                  ),
+                                  _vm.downPoints(guest.id).charAt(0) == "+"
+                                    ? _c(
+                                        "span",
+                                        {
+                                          directives: [
+                                            {
+                                              name: "b-tooltip",
+                                              rawName: "v-b-tooltip.hover",
+                                              modifiers: { hover: true }
+                                            }
+                                          ],
+                                          staticClass: "text-danger",
+                                          attrs: {
+                                            title:
+                                              "Puntos arriba del primer lugar"
+                                          }
+                                        },
+                                        [
+                                          _vm._v(
+                                            _vm._s(_vm.downPoints(guest.id))
+                                          )
+                                        ]
+                                      )
+                                    : _c(
+                                        "span",
+                                        {
+                                          directives: [
+                                            {
+                                              name: "b-tooltip",
+                                              rawName: "v-b-tooltip.hover",
+                                              modifiers: { hover: true }
+                                            }
+                                          ],
+                                          staticClass: "text-danger",
+                                          attrs: {
+                                            title: "Jugador con menos puntos"
+                                          }
+                                        },
+                                        [
+                                          _vm._v(
+                                            _vm._s(_vm.downPoints(guest.id))
+                                          )
+                                        ]
+                                      )
                                 ])
                               })
                             ],
@@ -87002,6 +87224,30 @@ var render = function() {
                     ])
                   : _vm._e()
               ]),
+              _vm._v(" "),
+              _vm.actual_round == 1 && _vm.is_owner
+                ? _c(
+                    "div",
+                    { staticClass: "mb-3" },
+                    [
+                      _c(
+                        "b-button",
+                        {
+                          directives: [
+                            {
+                              name: "b-modal",
+                              rawName: "v-b-modal.add-players-modal",
+                              modifiers: { "add-players-modal": true }
+                            }
+                          ],
+                          attrs: { variant: "dark" }
+                        },
+                        [_vm._v("Agregar jugadores manualmente")]
+                      )
+                    ],
+                    1
+                  )
+                : _vm._e(),
               _vm._v(" "),
               _vm.is_owner && _vm.actual_round < 8
                 ? _c(
@@ -87020,6 +87266,15 @@ var render = function() {
                           attrs: { variant: "success" }
                         },
                         [_vm._v("Anotar resultados de ronda")]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "b-button",
+                        {
+                          attrs: { variant: "danger" },
+                          on: { click: _vm.closeTable }
+                        },
+                        [_vm._v("Cerrar mesa y terminar partida")]
                       )
                     ],
                     1
@@ -87075,6 +87330,56 @@ var render = function() {
                         1
                       )
                     }),
+                    1
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "b-modal",
+                {
+                  ref: "modal",
+                  attrs: { id: "add-players-modal", title: "Agregar jugador" },
+                  on: { ok: _vm.addPlayer }
+                },
+                [
+                  _c(
+                    "form",
+                    {
+                      ref: "addplayerform",
+                      on: {
+                        submit: function($event) {
+                          $event.stopPropagation()
+                          $event.preventDefault()
+                          return _vm.addPlayer($event)
+                        }
+                      }
+                    },
+                    [
+                      _c(
+                        "b-form-group",
+                        {
+                          attrs: {
+                            label: "Nombre del jugador",
+                            "label-for": "name-input",
+                            "invalid-feedback": "El nombre es obligatorio"
+                          }
+                        },
+                        [
+                          _c("b-form-input", {
+                            attrs: { id: "name-input", required: "" },
+                            model: {
+                              value: _vm.player_name,
+                              callback: function($$v) {
+                                _vm.player_name = $$v
+                              },
+                              expression: "player_name"
+                            }
+                          })
+                        ],
+                        1
+                      )
+                    ],
                     1
                   )
                 ]
@@ -102471,6 +102776,9 @@ window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"]({
   cluster: "us3",
   forceTLS: true
 });
+window.Echo.connector.pusher.connection.bind('disconnected', function () {
+  console.log('disconnected');
+});
 
 /***/ }),
 
@@ -103052,6 +103360,7 @@ var Room = /*#__PURE__*/function () {
       axios.post("/api/nuevo_juego", data).then(function (res) {
         console.log(res.data);
         localStorage.setItem("guest_id", res.data.guest_key);
+        localStorage.setItem("game_id", res.data.id);
         document.cookie = "guest_id=" + res.data.guest_key;
         window.location = "/juego/" + res.data.id;
       })["catch"](function (error) {
@@ -103059,13 +103368,30 @@ var Room = /*#__PURE__*/function () {
       });
     }
   }, {
+    key: "joinLocal",
+    value: function joinLocal(data) {
+      axios.put("/api/unirse_juego", data);
+    }
+  }, {
     key: "join",
     value: function join(data) {
       axios.put("/api/unirse_juego", data).then(function (res) {
-        console.log(res.data);
         localStorage.setItem("guest_id", res.data.guest_key);
+        localStorage.setItem("game_id", res.data.id);
         document.cookie = "guest_id=" + res.data.guest_key;
         window.location = "/juego/" + res.data.id;
+      })["catch"](function (error) {
+        return console.log(error.response.data);
+      });
+    }
+  }, {
+    key: "close",
+    value: function close(room_id) {
+      axios.put("/api/close_table/".concat(room_id)).then(function (res) {
+        localStorage.removeItem("guest_id");
+        localStorage.removeItem("game_id");
+        document.cookie = 'guest_id=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        window.location = "/";
       })["catch"](function (error) {
         return console.log(error.response.data);
       });
@@ -103147,48 +103473,55 @@ var User = /*#__PURE__*/function () {
   _createClass(User, [{
     key: "login",
     value: function login(data) {
-      axios.post('/api/auth/login', data).then(function (res) {
-        localStorage.setItem('access_token', res.data.access_token);
-        location.reload();
+      return axios.post("/api/auth/login", data).then(function (res) {
+        if (res.data) {
+          console.log(res.data.access_token);
+          localStorage.setItem("access_token", res.data.access_token);
+          var JWTtoken = "Bearer ".concat(localStorage.getItem("access_token"));
+          window.axios.defaults.headers.common["Authorization"] = JWTtoken;
+          return true;
+        }
       })["catch"](function (error) {
-        return console.log(error.response.data);
+        return error.response.data;
       });
     }
   }, {
     key: "logout",
     value: function logout() {
-      localStorage.removeItem('access_token');
+      localStorage.removeItem("access_token");
       location.reload();
     }
   }, {
     key: "register",
     value: function register(data) {
-      axios.post('/api/auth/signup', data).then(function (res) {
+      return axios.post("/api/auth/signup", data).then(function (res) {
         console.log(res.data);
-        localStorage.setItem('access_token', res.data.access_token);
+        localStorage.setItem("access_token", res.data.access_token);
+        var JWTtoken = "Bearer ".concat(localStorage.getItem("access_token"));
+        window.axios.defaults.headers.common["Authorization"] = JWTtoken;
         location.reload();
       })["catch"](function (error) {
-        return console.log(error.response.data);
+        return error.response.data.errors;
       });
     }
   }, {
     key: "getRecord",
     value: function getRecord() {
-      return axios.get('/api/record').then(function (res) {
+      return axios.get("/api/record").then(function (res) {
         return res.data;
       })["catch"](function (error) {
-        localStorage.removeItem('access_token');
+        localStorage.removeItem("access_token");
         location.reload();
       });
     }
   }, {
     key: "loggedIn",
     value: function loggedIn() {
-      if (localStorage.getItem('access_token')) {
-        var payload = JSON.parse(atob(localStorage.getItem('access_token').split(".")[1]));
+      if (localStorage.getItem("access_token")) {
+        var payload = JSON.parse(atob(localStorage.getItem("access_token").split(".")[1]));
 
         if (payload) {
-          return payload.iss == 'https://prograweb.dev/api/auth/login' || 'https://prograweb.dev/api/auth/signup' ? true : false;
+          return payload.iss == "https://prograweb.dev/api/auth/login" || "https://prograweb.dev/api/auth/signup" ? true : false;
         }
 
         return false;
@@ -103254,8 +103587,21 @@ router.beforeEach(function (to, from, next) {
   if (!_helpers_User__WEBPACK_IMPORTED_MODULE_6__["default"].loggedIn() && to.name === 'AuthHome') next({
     name: 'Home'
   });
-  if (!_helpers_User__WEBPACK_IMPORTED_MODULE_6__["default"].loggedIn() && !localStorage.getItem('guest_id') && to.name === 'Game') next({
+  if (_helpers_User__WEBPACK_IMPORTED_MODULE_6__["default"].loggedIn() && to.query.user && to.name == 'Game') return next();
+  if (!localStorage.getItem('guest_id') && to.name === 'Game') next({
     name: 'Home'
+  });
+  if (localStorage.getItem('guest_id') && to.name === 'Home') next({
+    name: 'Game',
+    params: {
+      id: localStorage.getItem('game_id')
+    }
+  });
+  if (localStorage.getItem('guest_id') && to.name === 'AuthHome') next({
+    name: 'Game',
+    params: {
+      id: localStorage.getItem('game_id')
+    }
   });else next();
 });
 /* harmony default export */ __webpack_exports__["default"] = (router);

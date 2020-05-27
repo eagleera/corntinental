@@ -11,6 +11,9 @@ use App\Round;
 use App\Providers\RouteServiceProvider;
 use Symfony\Component\HttpFoundation\Cookie;
 use App\Events\JoinEvent;
+use App\Events\CloseEvent;
+use App\Events\PointsEvent;
+use Illuminate\Support\Facades\Crypt;
 
 class JuegoController extends Controller
 {
@@ -23,7 +26,8 @@ class JuegoController extends Controller
             'user_id' => 'sometimes'
         ]);
         $room = new Room;
-        $room->password = substr(str_shuffle("0123456789"), 0, 5);
+        $pwd = substr(str_shuffle("0123456789"), 0, 5);
+        $room->password = Crypt::encryptString(strval(rand(10000,99999)));
         $room->status = true;
         $room->name = $data['room_name'];
         $room->save();
@@ -36,26 +40,38 @@ class JuegoController extends Controller
 
     public function index(Request $request, $room_id){
         $room = Room::with('guests', 'points', 'owner')->find($room_id);
+        $room->password = Crypt::decryptString($room->password);
         return $room;
     }
 
     public function indexAvailable(){
-        return Room::where('status', 1)->get();
+        $rooms = Room::where('status', 1)->with('points')->get()->toArray();
+        $rooms = array_filter($rooms, function($obj){
+            if (sizeof($obj['points']) > 0) {
+                return false;
+            }
+            return true;
+        });
+        return $rooms;
     }
     
     public function joinRoom(Request $request){
         $data= $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'password' => 'required|max:5',
-            'alias' => 'sometimes',
-            'user_id' => 'sometimes',
+            'alias' => 'required',
+            'user_id' => 'nullable',
         ]);
-        $room = Room::where(['id' => $data['room_id'], 'password' => $data['password']])->first();
+        $room = Room::find($data['room_id']);
         if(!$room){
+            abort(404, 'No existe la mesa');
+        }
+        $decrypted_pwd = Crypt::decryptString($room->password);
+        if($decrypted_pwd != $data['password']){
             abort(404);
         }
         $guest = $this->createGuest($room->id, $data['alias'], $data['user_id']);
-        broadcast(new JoinEvent($room->id, $guest))->toOthers();
+        broadcast(new JoinEvent($room->id, $guest));
         $room->guest_key = $guest->guest_id;
         return $room;
     }
@@ -77,8 +93,14 @@ class JuegoController extends Controller
             $room->status = false;
             $room->save();
         }
-        broadcast(new JoinEvent($room->id, $room))->toOthers();
+        broadcast(new PointsEvent($room->id));
         return Room::with('points', 'guests', 'owner')->find($room_id);
+    }
+    public function closeTable($room_id){
+        $room = Room::find($room_id);
+        $room->status = false;
+        $room->save();
+        broadcast(new CloseEvent($room->id));
     }
 
     public function record(Request $request){
@@ -90,21 +112,22 @@ class JuegoController extends Controller
         $record = [];
         foreach($guests as &$guest){
             $plays = Room::record($guest->room_id)->get();
-            $plays = $this->roundsWonPerPlayer($plays, "guest_id");
-            usort($plays, function ($guest1, $guest2) {
-                return $guest1['points'] <=> $guest2['points'];
-            });
-            $place = 0;
-            foreach($plays as $key=>$value){
-                if($value['guest_id'] == $guest->getKey()){
-                    $place = $key;
-                break;
+            if(sizeof($plays) > 0){
+                $plays = $this->roundsWonPerPlayer($plays, "guest_id");
+                usort($plays, function ($guest1, $guest2) {
+                    return $guest1['points'] <=> $guest2['points'];
+                });
+                $place = 0;
+                foreach($plays as $key=>$value){
+                    if($value['guest_id'] == $guest->getKey()){
+                        $place = $key;
+                        $plays_temp = $plays[$place];
+                        $plays_temp['room'] = $guest->room;
+                        $plays_temp['place'] = $place + 1;
+                        $record[] = $plays_temp;
+                    }
                 }
             }
-            $plays = $plays[$place];
-            $plays['room'] = $guest->room;
-            $plays['place'] = $place + 1;
-            $record[] = $plays;
         }
         $response['user'] = $user;
         $response['record'] = $record;

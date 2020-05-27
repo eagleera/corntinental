@@ -19,3 +19,9 @@ Broadcast::channel('App.User.{id}', function ($user, $id) {
 Broadcast::channel('joinChannel', function () {
     return true; //Always return true or false
 });
+Broadcast::channel('closeChannel', function () {
+    return true; //Always return true or false
+});
+Broadcast::channel('pointsChannel', function () {
+    return true; //Always return true or false
+});

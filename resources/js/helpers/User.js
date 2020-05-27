@@ -1,42 +1,66 @@
 class User {
     login(data) {
-        axios.post('/api/auth/login', data)
+        return axios
+            .post("/api/auth/login", data)
             .then(res => {
-                localStorage.setItem('access_token', res.data.access_token);
-                location.reload();
+                if (res.data) {
+                    console.log(res.data.access_token);
+                    localStorage.setItem("access_token", res.data.access_token);
+                    const JWTtoken = `Bearer ${localStorage.getItem(
+                        "access_token"
+                    )}`;
+
+                    window.axios.defaults.headers.common[
+                        "Authorization"
+                    ] = JWTtoken;
+                    return true;
+                }
             })
-            .catch(error => console.log(error.response.data))
+            .catch(error => error.response.data);
     }
-    logout(){
-        localStorage.removeItem('access_token');
+    logout() {
+        localStorage.removeItem("access_token");
         location.reload();
     }
     register(data) {
-        axios.post('/api/auth/signup', data)
+        return axios
+            .post("/api/auth/signup", data)
             .then(res => {
-                console.log(res.data)
-                localStorage.setItem('access_token', res.data.access_token);
+                console.log(res.data);
+                localStorage.setItem("access_token", res.data.access_token);
+                const JWTtoken = `Bearer ${localStorage.getItem(
+                    "access_token"
+                )}`;
+                window.axios.defaults.headers.common[
+                    "Authorization"
+                ] = JWTtoken;
                 location.reload();
-            })
-            .catch(error => console.log(error.response.data))
-    }
-    getRecord(){
-        return axios.get('/api/record')
-            .then(res => {
-                return res.data;
             })
             .catch(error => {
-                localStorage.removeItem('access_token');
-                location.reload();
-            })
+                return error.response.data.errors;
+            });
     }
-    loggedIn(){
-        if(localStorage.getItem('access_token')){
-            const payload = JSON.parse(atob(localStorage.getItem('access_token').split(".")[1]));
-            if(payload){
-                return payload.iss == 'https://prograweb.dev/api/auth/login' || 'https://prograweb.dev/api/auth/signup' ? true : false
+    getRecord() {
+        return axios.get("/api/record").then(res => {
+            return res.data;
+        })
+        .catch(error => {
+            localStorage.removeItem("access_token");
+            location.reload();
+        });
+    }
+    loggedIn() {
+        if (localStorage.getItem("access_token")) {
+            const payload = JSON.parse(
+                atob(localStorage.getItem("access_token").split(".")[1])
+            );
+            if (payload) {
+                return payload.iss == "https://prograweb.dev/api/auth/login" ||
+                    "https://prograweb.dev/api/auth/signup"
+                    ? true
+                    : false;
             }
-            return false
+            return false;
         }
         return false;
     }
